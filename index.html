@@ -136,19 +136,19 @@
         sendButton.addEventListener('click', () => {
             if (userInput.value.trim() && !isTyping) {
                 sendMessage(userInput.value.trim());
-                userInput.value = '';
+                userInput.value = ''; // clear the input box after sending
             }
         });
 
         async function sendMessage(message) {
-            appendMessage(message, true);
-            setTypingIndicator(true);
+            appendMessage(message, true); // Show the user's message
+            setTypingIndicator(true); // Show typing indicator for the bot
 
-            // Simulate typing for 2 seconds
+            // Simulate typing for 2 seconds before getting a response from the server
             setTimeout(async () => {
-                const response = await fetchOpenAI(message);
-                setTypingIndicator(false);
-                appendMessage(response, false);
+                const response = await fetchOpenAI(message); // Get the response from the server
+                setTypingIndicator(false); // Hide typing indicator
+                appendMessage(response, false); // Show the bot's response
             }, 2000);
         }
 
@@ -164,7 +164,7 @@
             messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
             messageDiv.textContent = content;
             chatBox.appendChild(messageDiv);
-            chatBox.scrollTop = chatBox.scrollHeight;
+            chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll to the latest message
         }
 
         function setTypingIndicator(show) {
@@ -182,7 +182,7 @@
                     typingIndicator.remove();
                 }
             }
-            chatBox.scrollTop = chatBox.scrollHeight;
+            chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll to the latest message
         }
 
         async function fetchOpenAI(message) {
@@ -206,7 +206,7 @@
                 })
             });
             const data = await response.json();
-            return data.choices[0].message.content;
+            return data.choices[0].message.content; // Extract the chatbot's response
         }
     </script>
 </body>
