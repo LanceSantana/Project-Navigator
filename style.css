@@ -23,21 +23,23 @@ h1 {
     background-color: #C2B097;
     border-radius: 10px;
     padding: 10px;
-    max-height: 400px;  /* Fix height of chatbox */
-    overflow-y: auto;  /* Scroll if content overflows */
+    max-height: 400px;  /* Ensure chatbox has a maximum height */
+    overflow-y: auto;  /* Enable scrolling when content overflows */
     display: flex;
     flex-direction: column;
     margin-bottom: 20px;
-    word-wrap: break-word;  /* Break long words to prevent overflow */
+    word-wrap: break-word;  /* Ensure long words break within the box */
 }
 
 .message {
     margin: 5px 0;
     padding: 10px;
     border-radius: 10px;
-    max-width: 75%;
+    max-width: 75%;  /* Ensure the message bubbles don’t get too wide */
     word-wrap: break-word;
-    white-space: pre-wrap;  /* Preserve whitespace and line breaks in the text */
+    white-space: pre-wrap;  /* Preserve whitespace and wrap text */
+    display: inline-block;  /* Allows message bubble to resize dynamically */
+    line-height: 1.4;  /* Make sure there's spacing inside the bubble */
 }
 
 .message.user {
