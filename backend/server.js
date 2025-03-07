@@ -1,43 +1,111 @@
-require('dotenv').config();
 const express = require('express');
 const multer = require('multer');
 const pdfParse = require('pdf-parse');
+const axios = require('axios');
 const cors = require('cors');
-const fs = require('fs');
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// 📌 Step 1: Add a default route for the root URL
-app.get('/', (req, res) => {
-    res.send('Server is running!');
-});
+const upload = multer();
 
-// Configure multer for file uploads
-const upload = multer({ dest: 'uploads/' });
+// **MongoDB Connection**
+mongoose.connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+}).then(() => console.log("✅ Connected to MongoDB"))
+.catch(err => console.error("❌ MongoDB Connection Error:", err));
 
-app.post('/upload-pdf', upload.single('pdfFile'), async (req, res) => {
+// **Middleware to Verify JWT**
+const authMiddleware = (req, res, next) => {
+    const token = req.header("Authorization");
+    if (!token) return res.status(401).json({ error: "Access denied. No token provided." });
+
     try {
-        if (!req.file) {
-            return res.status(400).json({ error: 'No file uploaded' });
-        }
+        const decoded = jwt.verify(token.replace("Bearer ", ""), process.env.JWT_SECRET);
+        req.user = decoded; // Attach user data to the request
+        next();
+    } catch (err) {
+        res.status(401).json({ error: "Invalid token." });
+    }
+};
 
-        // Read the uploaded PDF file
-        const pdfBuffer = fs.readFileSync(req.file.path);
-        const pdfData = await pdfParse(pdfBuffer);
+// **Database Models**
+const UserSchema = new mongoose.Schema({
+    email: String,
+    password: String
+});
+const User = mongoose.model("User", UserSchema);
 
-        // Return extracted text
-        res.json({ text: pdfData.text });
+const ProjectSchema = new mongoose.Schema({
+    userId: String,
+    name: String,
+    conversation: Array
+});
+const Project = mongoose.model("Project", ProjectSchema);
 
-        // Optional: Delete file after processing to save storage
-        fs.unlinkSync(req.file.path);
+// **User Signup**
+app.post('/signup', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newUser = new User({ email, password: hashedPassword });
+        await newUser.save();
+        res.json({ message: "✅ User registered successfully!" });
     } catch (error) {
-        console.error('Error processing PDF:', error);
-        res.status(500).json({ error: 'Error processing PDF' });
+        res.status(500).json({ error: "❌ Error registering user." });
     }
 });
 
-// Start the server
-const PORT = 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
+// **User Login**
+app.post('/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        const user = await User.findOne({ email });
+        if (!user || !(await bcrypt.compare(password, user.password))) {
+            return res.status(401).json({ error: "❌ Invalid credentials" });
+        }
+        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+        res.json({ token });
+    } catch (error) {
+        res.status(500).json({ error: "❌ Error logging in." });
+    }
+});
+
+// **Upload and Process PDF (Protected Route)**
+app.post('/upload-pdf', authMiddleware, upload.single('pdfFile'), async (req, res) => {
+    const userId = req.user.userId; // Extract user ID from JWT
+    const { projectId } = req.body;
+
+    if (!req.file) return res.status(400).json({ error: "❌ No file uploaded." });
+
+    try {
+        const data = await pdfParse(req.file.buffer);
+        const extractedText = data.text;
+
+        const chatGptResponse = await axios.post("https://api.openai.com/v1/chat/completions", {
+            model: "gpt-4",
+            messages: [
+                { role: "system", content: "You are an AI following PMBOK best practices for project management analysis." },
+                { role: "user", content: `Analyze this project data:\n${extractedText}` }
+            ]
+        }, {
+            headers: { "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`, "Content-Type": "application/json" }
+        });
+
+        const reply = chatGptResponse.data.choices[0].message.content;
+
+        let project = await Project.findOne({ _id: projectId, userId });
+        if (!project) {
+            project = new Project({ userId, name: `Project ${Date.now()}`, conversation: [] });
+        }
+        project.conversation.push({ role: "user", content: extractedText });
+        project.conversation.push({ role: "assistant", content: reply });
+        await project.save();
+
+        res.json({ extractedText, chatGptReply: reply, conv
