@@ -23,7 +23,7 @@ h1 {
     border-radius: 10px;
     padding: 10px;
     height: 400px; /* Fixed height */
-    min-height: 300px; /* Ensure the chatbox does not shrink below this height */
+    min-height: 1000px; /* Ensure the chatbox does not shrink below this height */
     overflow-y: auto;
     display: flex;
     flex-direction: column;
@@ -85,57 +85,9 @@ h1 {
     text-align: center;
     border-radius: 8px;
     cursor: pointer;
-    transition: background-color 0.3s ease; /* Smooth color transition */
-}
-
-/* Buttons - Darker color on click */
-.button:active {
-    background-color: #600013;
 }
 
 .button.disabled {
     opacity: 0.5;
     pointer-events: none;
-}
-
-/* Style for "Logout", "Upload PDF", and "Choose File" Buttons */
-.logout-button, .upload-button, .choose-file-button {
-    background-color: #80001A; /* Matching the Send button color */
-    color: white;
-    text-align: center;
-    padding: 10px;
-    border-radius: 8px;
-    cursor: pointer;
-    width: 100%;
-    margin: 10px 0;
-    transition: background-color 0.3s ease;
-}
-
-.logout-button:hover, .upload-button:hover, .choose-file-button:hover {
-    background-color: #600013; /* Darker shade on hover */
-}
-
-.logout-button:active, .upload-button:active, .choose-file-button:active {
-    background-color: #40000A; /* Even darker shade on active */
-}
-
-/* File input style to make it look like the button */
-#pdfInput {
-    display: none;  /* Hide default file input */
-}
-
-.file-label {
-    background-color: #80001A;
-    color: white;
-    padding: 10px;
-    border-radius: 8px;
-    text-align: center;
-    cursor: pointer;
-    width: 100%;
-    display: inline-block;
-    margin: 10px 0;
-}
-
-.file-label:hover {
-    background-color: #600013; /* Darker shade on hover */
 }
