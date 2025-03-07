@@ -10,15 +10,9 @@
     <h1>Project Navigator</h1>
 
     <div class="container">
-        <!-- Logout Button -->
-        <button onclick="logout()">Logout</button>
+        <h2>Chat with Project Navigator</h2>
 
-        <!-- PDF Upload Section -->
-        <h2>Upload a PDF</h2>
-        <input type="file" id="pdfInput">
-        <button onclick="uploadPDF()">Upload PDF</button>
-
-        <!-- Chat Box where messages will appear -->
+        <!-- Chat Box: where the messages will appear -->
         <div class="chat-box" id="chatBox"></div>
 
         <!-- Input Section for User -->
@@ -28,9 +22,13 @@
                 <div class="button" id="sendButton">Send</div>
             </div>
         </div>
-    </div>
 
-    <pre id="output"></pre>
+        <!-- PDF Upload Section (added back) -->
+        <h2>Upload a PDF (Requires Login)</h2>
+        <input type="file" id="pdfInput">
+        <button onclick="uploadPDF()">Upload PDF</button>
+
+    </div>
 
     <script>
         const API_URL = "https://project-navigator-gzq4.onrender.com"; // Your backend URL
@@ -60,61 +58,4 @@
         }
 
         // Event listener for sending messages when button is clicked
-        document.getElementById('sendButton').addEventListener('click', sendMessage);
-
-        // Append messages to the chat box
-        function appendMessage(content, isUser) {
-            const chatBox = document.getElementById('chatBox');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
-            messageDiv.textContent = content;
-            chatBox.appendChild(messageDiv);
-
-            // Ensure the chatbox scrolls to the latest message
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        // Automatically resize the text area based on the text content
-        const userInput = document.getElementById('userInput');
-        userInput.addEventListener('input', function () {
-            this.style.height = 'auto';  // Reset height to auto before recalculating
-            this.style.height = (this.scrollHeight) + 'px';  // Adjust height to content
-        });
-
-        // Function to handle PDF upload
-        async function uploadPDF() {
-            const fileInput = document.getElementById('pdfInput');
-            const file = fileInput.files[0];
-            const token = localStorage.getItem("jwt");
-
-            if (!file) {
-                alert("Please select a PDF file!");
-                return;
-            }
-
-            if (!token) {
-                alert("You must be logged in to upload a PDF.");
-                return;
-            }
-
-            const formData = new FormData();
-            formData.append('pdfFile', file);
-
-            const response = await fetch(`${API_URL}/upload-pdf`, {
-                method: 'POST',
-                headers: { "Authorization": `Bearer ${token}` },
-                body: formData
-            });
-
-            const data = await response.json();
-            document.getElementById("output").innerText = data.chatGptReply || data.error; // Display response in output
-        }
-
-        // Logout function
-        function logout() {
-            localStorage.removeItem("jwt");
-            window.location.href = 'login.html'; // Redirect to login page after logout
-        }
-    </script>
-</body>
-</html>
+        document.getElementById('sendButton').addEventListene
