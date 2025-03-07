@@ -61,7 +61,9 @@
             messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
             messageDiv.textContent = content;
             chatBox.appendChild(messageDiv);
-            chatBox.scrollTop = chatBox.scrollHeight;  // Scroll to the latest message
+            
+            // Ensure the chatbox scrolls to the latest message
+            chatBox.scrollTop = chatBox.scrollHeight;  
         }
 
         // Automatically resize the text area based on the text content
