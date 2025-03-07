@@ -5,7 +5,6 @@ body {
     margin: 0;
     padding: 0;
 }
-
 h1 {
     font-size: 2em;
     color: #80001A; /* Burgundy */
@@ -19,14 +18,17 @@ h1 {
     padding: 20px;
 }
 
+/* Chatbox Styles */
 .chat-box {
     background-color: #C2B097;
     border-radius: 10px;
     padding: 10px;
-    height: 400px;
-    overflow-y: auto;
+    max-height: 400px;  /* Fix height of chatbox */
+    overflow-y: auto;  /* Scroll if content overflows */
     display: flex;
     flex-direction: column;
+    margin-bottom: 20px;
+    word-wrap: break-word;  /* Break long words to prevent overflow */
 }
 
 .message {
@@ -34,6 +36,8 @@ h1 {
     padding: 10px;
     border-radius: 10px;
     max-width: 75%;
+    word-wrap: break-word;
+    white-space: pre-wrap;  /* Preserve whitespace and line breaks in the text */
 }
 
 .message.user {
@@ -47,6 +51,7 @@ h1 {
     align-self: flex-start;
 }
 
+/* Input Section Styles */
 .input-section {
     display: flex;
     flex-direction: column;
@@ -56,14 +61,18 @@ h1 {
     border-radius: 10px;
 }
 
-.input-section textarea, input {
+.input-section textarea {
     width: calc(100% - 20px);
     padding: 10px;
     margin: 5px 0;
     border: 1px solid #ccc;
     border-radius: 8px;
+    resize: none;
+    overflow: hidden;
+    min-height: 40px;
 }
 
+/* Button Styles */
 .buttons {
     display: flex;
     justify-content: space-between;
