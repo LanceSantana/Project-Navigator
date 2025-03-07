@@ -11,35 +11,31 @@ h1 {
     text-align: center;
     margin-top: 20px;
 }
-
 .container {
     max-width: 600px;
     margin: auto;
     padding: 20px;
 }
 
-/* Chatbox Styles */
+/* Chat Box Styles */
 .chat-box {
     background-color: #C2B097;
     border-radius: 10px;
     padding: 10px;
-    max-height: 400px;  /* Ensure chatbox has a maximum height */
-    overflow-y: auto;  /* Enable scrolling when content overflows */
+    height: 400px; /* Fixed height */
+    min-height: 300px; /* Ensure the chatbox does not shrink below this height */
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
-    margin-bottom: 20px;
-    word-wrap: break-word;  /* Ensure long words break within the box */
 }
 
+/* Message Styles */
 .message {
     margin: 5px 0;
     padding: 10px;
     border-radius: 10px;
-    max-width: 75%;  /* Ensure the message bubbles don’t get too wide */
-    word-wrap: break-word;
-    white-space: pre-wrap;  /* Preserve whitespace and wrap text */
-    display: inline-block;  /* Allows message bubble to resize dynamically */
-    line-height: 1.4;  /* Make sure there's spacing inside the bubble */
+    max-width: 75%;
+    word-wrap: break-word; /* Ensure long words wrap within the box */
 }
 
 .message.user {
@@ -51,9 +47,12 @@ h1 {
 .message.bot {
     background-color: #FFFFFF;
     align-self: flex-start;
+    white-space: pre-wrap;  /* Handle line breaks from PDF or long text */
+    word-wrap: break-word;  /* Ensure long words wrap */
+    overflow-wrap: break-word;  /* Prevent overflow in message */
 }
 
-/* Input Section Styles */
+/* Input Section */
 .input-section {
     display: flex;
     flex-direction: column;
@@ -63,18 +62,15 @@ h1 {
     border-radius: 10px;
 }
 
-.input-section textarea {
+.input-section textarea, input {
     width: calc(100% - 20px);
     padding: 10px;
     margin: 5px 0;
     border: 1px solid #ccc;
     border-radius: 8px;
-    resize: none;
-    overflow: hidden;
-    min-height: 40px;
 }
 
-/* Button Styles */
+/* Buttons */
 .buttons {
     display: flex;
     justify-content: space-between;
