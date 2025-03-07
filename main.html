@@ -22,6 +22,12 @@
                 <div class="button" id="sendButton">Send</div>
             </div>
         </div>
+
+        <!-- PDF Upload Section (added back) -->
+        <h2>Upload a PDF (Requires Login)</h2>
+        <input type="file" id="pdfInput">
+        <button onclick="uploadPDF()">Upload PDF</button>
+
     </div>
 
     <script>
@@ -72,6 +78,35 @@
             this.style.height = 'auto';  // Reset height to auto before recalculating
             this.style.height = (this.scrollHeight) + 'px';  // Adjust height to content
         });
+
+        // Function to handle PDF upload
+        async function uploadPDF() {
+            const fileInput = document.getElementById('pdfInput');
+            const file = fileInput.files[0];
+            const token = localStorage.getItem("jwt");
+
+            if (!file) {
+                alert("Please select a PDF file!");
+                return;
+            }
+
+            if (!token) {
+                alert("You must be logged in to upload a PDF.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('pdfFile', file);
+
+            const response = await fetch(`${API_URL}/upload-pdf`, {
+                method: 'POST',
+                headers: { "Authorization": `Bearer ${token}` },
+                body: formData
+            });
+
+            const data = await response.json();
+            document.getElementById("chatBox").textContent = data.chatGptReply || data.error; // Display response in chatbox
+        }
     </script>
 </body>
 </html>
