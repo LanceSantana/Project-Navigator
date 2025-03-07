@@ -107,7 +107,7 @@
             });
 
             const data = await response.json();
-            document.getElementById("output").innerText = data.chatGptReply || data.error; // Display response in output
+            appendMessage(data.chatGptReply || data.error, false); // Append PDF output to chatbox
         }
 
         // Logout function
