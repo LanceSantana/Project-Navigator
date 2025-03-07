@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Main Page - Project Navigator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Project Navigator</h1>
+
+    <div class="container">
+        <button onclick="logout()">Logout</button>
+
+        <h2>Upload a PDF (Requires Login)</h2>
+        <input type="file" id="pdfInput">
+        <button onclick="uploadPDF()">Upload</button>
+
+        <div class="chat-box" id="chatBox"></div>
+
+        <div class="input-section">
+            <textarea id="userInput" placeholder="Message Chatbot Navigator"></textarea>
+            <div class="buttons">
+                <div class="button" id="sendButton">Send</div>
+            </div>
+        </div>
+    </div>
+
+    <pre id="output"></pre>
+
+    <script>
+        const API_URL = "https://project-navigator-gzq4.onrender.com"; // Change to your backend URL
+
+        async function uploadPDF() {
+            const fileInput = document.getElementById('pdfInput');
+            const file = fileInput.files[0];
+            const token = localStorage.getItem("jwt");
+
+            if (!file) {
+                alert("Please select a file!");
+                return;
+            }
+
+            if (!token) {
+                alert("You must be logged in to upload a PDF.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('pdfFile', file);
+
+            const response = await fetch(`${API_URL}/upload-pdf`, {
+                method: 'POST',
+                headers: { "Authorization": `Bearer ${token}` },
+                body: formData
+            });
+
+            const data = await response.json();
+            document.getElementById("output").innerText = data.chatGptReply || data.error;
+        }
+
+        async function sendMessage() {
+            const userInput = document.getElementById('userInput');
+            const token = localStorage.getItem("jwt");
+
+            if (!token) {
+                alert("You must be logged in to chat.");
+                return;
+            }
+
+            const message = userInput.value.trim();
+            if (!message) return;
+
+            appendMessage(message, true);
+            userInput.value = '';
+
+            const response = await fetch(`${API_URL}/chat`, {
+                method: "POST",
+                headers: { 
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({ projectId: "12345", message }) // Replace projectId dynamically
+            });
+
+            const data = await response.json();
+            appendMessage(data.chatGptReply || "No response from AI.", false);
+        }
+
+        function appendMessage(content, isUser) {
+            const chatBox = document.getElementById('chatBox');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
+            messageDiv.textContent = content;
+            chatBox.appendChild(messageDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        document.getElementById('sendButton').addEventListener('click', sendMessage);
+
+        function logout() {
+            localStorage.removeItem("jwt");
+            window.location.href = 'login.html'; // Redirect to login page after logout
+        }
+    </script>
+</body>
+</html>
