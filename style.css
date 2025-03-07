@@ -23,7 +23,7 @@ h1 {
     border-radius: 10px;
     padding: 10px;
     height: 400px; /* Fixed height */
-    min-height: 1000px; /* Ensure the chatbox does not shrink below this height */
+    min-height: 300px; /* Ensure the chatbox does not shrink below this height */
     overflow-y: auto;
     display: flex;
     flex-direction: column;
@@ -90,4 +90,40 @@ h1 {
 .button.disabled {
     opacity: 0.5;
     pointer-events: none;
+}
+
+/* Style for Logout and Upload Buttons (same as Send) */
+.logout-button, .upload-button {
+    background-color: #80001A; /* Matching the Send button color */
+    color: white;
+    text-align: center;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin: 10px 0;
+}
+
+.logout-button:hover, .upload-button:hover {
+    background-color: #600013; /* Darker shade on hover */
+}
+
+/* File input style to make it look like the button */
+#pdfInput {
+    display: none;  /* Hide default file input */
+}
+
+.file-label {
+    background-color: #80001A;
+    color: white;
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    width: 100%;
+    display: inline-block;
+    margin: 10px 0;
+}
+
+.file-label:hover {
+    background-color: #600013; /* Darker shade on hover */
 }
