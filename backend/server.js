@@ -108,4 +108,54 @@ app.post('/upload-pdf', authMiddleware, upload.single('pdfFile'), async (req, re
         project.conversation.push({ role: "assistant", content: reply });
         await project.save();
 
-        res.json({ extractedText, chatGptReply: reply, conv
+        res.json({ extractedText, chatGptReply: reply, conversation: project.conversation });
+    } catch (error) {
+        console.error("❌ Error:", error);
+        res.status(500).json({ error: "Failed to process PDF" });
+    }
+});
+
+// **Get User's Projects (Protected Route)**
+app.get('/projects', authMiddleware, async (req, res) => {
+    const userId = req.user.userId; // Extract user ID from JWT
+    try {
+        const projects = await Project.find({ userId });
+        res.json(projects);
+    } catch (error) {
+        res.status(500).json({ error: "❌ Error fetching projects." });
+    }
+});
+
+// **Continue a Project Conversation (Protected Route)**
+app.post('/chat', authMiddleware, async (req, res) => {
+    const userId = req.user.userId; // Extract user ID from JWT
+    const { projectId, message } = req.body;
+
+    try {
+        let project = await Project.findOne({ _id: projectId, userId });
+        if (!project) return res.status(404).json({ error: "❌ Project not found." });
+
+        project.conversation.push({ role: "user", content: message });
+
+        const chatGptResponse = await axios.post("https://api.openai.com/v1/chat/completions", {
+            model: "gpt-4",
+            messages: project.conversation
+        }, {
+            headers: { "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`, "Content-Type": "application/json" }
+        });
+
+        const reply = chatGptResponse.data.choices[0].message.content;
+        project.conversation.push({ role: "assistant", content: reply });
+        await project.save();
+
+        res.json({ chatGptReply: reply, conversation: project.conversation });
+    } catch (error) {
+        console.error("❌ Error:", error);
+        res.status(500).json({ error: "Failed to continue chat." });
+    }
+});
+
+// **Start the Server**
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+
