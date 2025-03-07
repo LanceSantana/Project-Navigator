@@ -23,7 +23,7 @@ h1 {
     border-radius: 10px;
     padding: 10px;
     height: 400px; /* Fixed height */
-    min-height: 300px; /* Ensure the chatbox does not shrink below this height */
+    min-height: 1000px; /* Ensure the chatbox does not shrink below this height */
     overflow-y: auto;
     display: flex;
     flex-direction: column;
