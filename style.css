@@ -107,20 +107,19 @@ h1 {
     background-color: #600013; /* Darker shade on hover */
 }
 
-/* Logout Button Positioning and Styling */
+/* Logout Button Positioning */
 .logout-button {
     position: fixed;
     bottom: 20px;
     left: 50%;
-    transform: translateX(-50%);  /* Center the button horizontally */
-    width: 200px;  /* Optional: Adjust the width of the button */
+    transform: translateX(-50%);
     background-color: #80001A;
     color: white;
     padding: 10px;
     border-radius: 8px;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    text-align: center; /* Center the text inside the button */
+    width: 80%; /* Match the width of the chatbox */
 }
 
 .logout-button:hover {
@@ -131,19 +130,39 @@ h1 {
     background-color: #40000A; /* Even darker shade on active */
 }
 
-/* Style for "Choose File" Label */
-.file-label {
-    background-color: #80001A;
-    color: white;
+/* Loading Message Style */
+.loading-message {
+    background-color: #f1f1f1;
+    color: #888;
     padding: 10px;
-    border-radius: 8px;
+    border-radius: 10px;
+    max-width: 75%;
+    align-self: center;
     text-align: center;
-    cursor: pointer;
-    width: 100%;
+    margin: 5px 0;
+    font-weight: bold;
     display: inline-block;
-    margin: 10px 0;
+    white-space: nowrap;
 }
 
-.file-label:hover {
-    background-color: #600013; /* Darker shade on hover */
+/* Keyframes for the loading animation */
+@keyframes loadingAnimation {
+    0% {
+        content: 'Loading.';
+    }
+    33% {
+        content: 'Loading..';
+    }
+    66% {
+        content: 'Loading...';
+    }
+    100% {
+        content: 'Loading.';
+    }
+}
+
+/* Apply the animation to the loading message */
+.loading-message::after {
+    content: 'Loading.'; /* Default content */
+    animation: loadingAnimation 1.5s infinite steps(1); /* 1.5s duration, infinite loop */
 }

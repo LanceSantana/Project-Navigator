@@ -26,8 +26,10 @@
         </div>
     </div>
 
-    <!-- Logout Button -->
     <button class="logout-button" onclick="logout()">Logout</button>
+
+    <!-- Loading message placeholder -->
+    <div id="loadingMessage" class="loading-message"></div>
 
     <pre id="output"></pre>
 
@@ -44,6 +46,9 @@
             appendMessage(message, true);  // Append user message
             userInput.value = ''; // Clear input field
 
+            // Show loading message
+            showLoadingMessage();
+
             // Send message to backend server
             const response = await fetch(`${API_URL}/chat`, {
                 method: "POST",
@@ -55,6 +60,9 @@
             });
 
             const data = await response.json();
+
+            // Hide loading message and append response from AI
+            hideLoadingMessage();
             appendMessage(data.chatGptReply || "No response from AI.", false); // Append response from AI
         }
 
@@ -96,8 +104,11 @@
                 return;
             }
 
+            // Show loading message
+            showLoadingMessage();
+
             const formData = new FormData();
-            formData.append('pdfFile', file);  // Append the file to FormData object
+            formData.append('pdfFile', file);
 
             const response = await fetch(`${API_URL}/upload-pdf`, {
                 method: 'POST',
@@ -106,7 +117,37 @@
             });
 
             const data = await response.json();
+
+            // Hide loading message and append PDF output to chatbox
+            hideLoadingMessage();
             appendMessage(data.chatGptReply || data.error, false); // Append PDF output to chatbox
+        }
+
+        // Show loading message
+        function showLoadingMessage() {
+            const loadingMessage = document.getElementById('loadingMessage');
+            loadingMessage.textContent = 'Loading.'; // Start with the first frame
+            loadingMessage.style.display = 'block';
+
+            // Start the animation
+            let dotCount = 1;
+            const interval = setInterval(() => {
+                if (dotCount === 3) {
+                    dotCount = 1;
+                }
+                loadingMessage.textContent = `Loading${'.'.repeat(dotCount)}`;
+                dotCount++;
+            }, 500); // Change the message every 500ms
+
+            // Store interval ID to clear it later
+            loadingMessage.setAttribute('data-interval-id', interval);
+        }
+
+        // Hide loading message
+        function hideLoadingMessage() {
+            const loadingMessage = document.getElementById('loadingMessage');
+            clearInterval(loadingMessage.getAttribute('data-interval-id')); // Clear the animation interval
+            loadingMessage.style.display = 'none';
         }
 
         // Logout function
