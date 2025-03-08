@@ -30,12 +30,6 @@
                 <div class="button" id="sendButton">Send</div>
             </div>
         </div>
-
-        <!-- Sign Up and Login Buttons (Styled Like the Send Button) -->
-        <div class="buttons">
-            <button class="button" id="signUpButton">Sign Up</button>
-            <button class="button" id="loginButton">Login</button>
-        </div>
     </div>
 
     <pre id="output"></pre>
@@ -58,7 +52,7 @@
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${localStorage.getItem('jwt')}`
+                    "Authorization": `Bearer ${localStorage.getItem('jwt')}` // Authentication header
                 },
                 body: JSON.stringify({ projectId: "12345", message }) // Dynamic projectId
             });
