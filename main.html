@@ -26,6 +26,7 @@
         </div>
     </div>
 
+    <!-- Logout Button -->
     <button class="logout-button" onclick="logout()">Logout</button>
 
     <pre id="output"></pre>
@@ -96,7 +97,7 @@
             }
 
             const formData = new FormData();
-            formData.append('pdfFile', file);
+            formData.append('pdfFile', file);  // Append the file to FormData object
 
             const response = await fetch(`${API_URL}/upload-pdf`, {
                 method: 'POST',
