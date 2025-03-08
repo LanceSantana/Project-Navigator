@@ -111,8 +111,6 @@ h1 {
 .logout-button {
     position: fixed;
     bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
     background-color: #80001A;
     color: white;
     padding: 10px;
