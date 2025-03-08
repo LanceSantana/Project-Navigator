@@ -5,14 +5,12 @@ body {
     margin: 0;
     padding: 0;
 }
-
 h1 {
     font-size: 2em;
     color: #80001A; /* Burgundy */
     text-align: center;
     margin-top: 20px;
 }
-
 .container {
     max-width: 600px;
     margin: auto;
@@ -75,7 +73,7 @@ h1 {
 /* Buttons */
 .buttons {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
 }
 
 .button {
@@ -87,12 +85,6 @@ h1 {
     text-align: center;
     border-radius: 8px;
     cursor: pointer;
-    transition: background-color 0.3s ease; /* Smooth color transition */
-}
-
-/* Buttons - Darker color on click */
-.button:active {
-    background-color: #600013;
 }
 
 .button.disabled {
@@ -100,32 +92,44 @@ h1 {
     pointer-events: none;
 }
 
-/* Style for "Logout", "Upload PDF", and "Choose File" Buttons */
-.logout-button, .upload-button, .choose-file-button {
-    background-color: #80001A; /* Matching the Send button color */
+/* File Button Style */
+.choose-file-button {
+    background-color: #80001A;
     color: white;
-    text-align: center;
     padding: 10px;
     border-radius: 8px;
+    text-align: center;
     cursor: pointer;
-    width: 100%;
-    margin: 10px 0;
-    transition: background-color 0.3s ease;
+    margin-left: 10px; /* Space between buttons */
 }
 
-.logout-button:hover, .upload-button:hover, .choose-file-button:hover {
+.choose-file-button:hover {
     background-color: #600013; /* Darker shade on hover */
 }
 
-.logout-button:active, .upload-button:active, .choose-file-button:active {
+/* Logout Button Positioning */
+.logout-button {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #80001A;
+    color: white;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.logout-button:hover {
+    background-color: #600013; /* Darker shade on hover */
+}
+
+.logout-button:active {
     background-color: #40000A; /* Even darker shade on active */
 }
 
-/* File input style to make it look like the button */
-#pdfInput {
-    display: none;  /* Hide default file input */
-}
-
+/* Style for "Choose File" Label */
 .file-label {
     background-color: #80001A;
     color: white;

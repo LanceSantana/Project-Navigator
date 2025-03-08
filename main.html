@@ -10,9 +10,6 @@
     <h1>Project Navigator</h1>
 
     <div class="container">
-        <!-- Logout Button -->
-        <button class="logout-button" onclick="logout()">Logout</button>
-
         <!-- PDF Upload Section -->
         <h2>Upload a PDF (Requires Login)</h2>
         <!-- Hidden File Input -->
@@ -28,9 +25,13 @@
             <textarea id="userInput" placeholder="Type your message..."></textarea>
             <div class="buttons">
                 <div class="button" id="sendButton">Send</div>
+                <!-- Add "Choose File" button next to "Send" -->
+                <label for="pdfInput" class="button choose-file-button">Choose File</label>
             </div>
         </div>
     </div>
+
+    <button class="logout-button" onclick="logout()">Logout</button>
 
     <pre id="output"></pre>
 
