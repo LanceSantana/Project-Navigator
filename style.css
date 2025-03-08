@@ -107,16 +107,17 @@ h1 {
     background-color: #600013; /* Darker shade on hover */
 }
 
-/* Logout Button Positioning */
+/* Logout Button Positioning and Styling */
 .logout-button {
-    position: fixed;
-    bottom: 20px;
+    width: 100%; /* Make it the same width as the chatbox */
     background-color: #80001A;
     color: white;
     padding: 10px;
     border-radius: 8px;
     cursor: pointer;
     transition: background-color 0.3s ease;
+    text-align: center;
+    margin-top: 10px; /* Add some space above the button */
 }
 
 .logout-button:hover {
