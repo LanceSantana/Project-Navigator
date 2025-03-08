@@ -10,13 +10,6 @@
     <h1>Project Navigator</h1>
 
     <div class="container">
-        <!-- PDF Upload Section -->
-        <h2>Upload a PDF (Requires Login)</h2>
-        <!-- Hidden File Input -->
-        <input type="file" id="pdfInput" onchange="uploadPDF()">
-        <!-- Custom Upload Button Styled Like the Send Button -->
-        <label for="pdfInput" class="file-label">Choose File</label>
-
         <!-- Chat Box where messages will appear -->
         <div class="chat-box" id="chatBox"></div>
 
@@ -27,6 +20,8 @@
                 <div class="button" id="sendButton">Send</div>
                 <!-- Add "Choose File" button next to "Send" -->
                 <label for="pdfInput" class="button choose-file-button">Choose File</label>
+                <!-- Hidden PDF input -->
+                <input type="file" id="pdfInput" onchange="uploadPDF()" style="display: none;">
             </div>
         </div>
     </div>
