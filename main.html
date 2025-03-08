@@ -28,9 +28,6 @@
 
     <button class="logout-button" onclick="logout()">Logout</button>
 
-    <!-- Loading message placeholder -->
-    <div id="loadingMessage" class="loading-message"></div>
-
     <pre id="output"></pre>
 
     <script>
@@ -123,11 +120,16 @@
             appendMessage(data.chatGptReply || data.error, false); // Append PDF output to chatbox
         }
 
-        // Show loading message
+        // Show loading message inside chatbox
         function showLoadingMessage() {
-            const loadingMessage = document.getElementById('loadingMessage');
-            loadingMessage.textContent = 'Loading.'; // Start with the first frame
-            loadingMessage.style.display = 'block';
+            const chatBox = document.getElementById('chatBox');
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'loading-message';
+            loadingDiv.textContent = 'Loading.'; // Start with the first frame
+            chatBox.appendChild(loadingDiv);
+
+            // Store the loading div for removal later
+            chatBox.setAttribute('data-loading-div', loadingDiv);
 
             // Start the animation
             let dotCount = 1;
@@ -135,25 +137,26 @@
                 if (dotCount === 3) {
                     dotCount = 1;
                 }
-                loadingMessage.textContent = `Loading${'.'.repeat(dotCount)}`;
+                loadingDiv.textContent = `Loading${'.'.repeat(dotCount)}`;
                 dotCount++;
             }, 500); // Change the message every 500ms
 
             // Store interval ID to clear it later
-            loadingMessage.setAttribute('data-interval-id', interval);
+            loadingDiv.setAttribute('data-interval-id', interval);
         }
 
         // Hide loading message
         function hideLoadingMessage() {
-            const loadingMessage = document.getElementById('loadingMessage');
-            clearInterval(loadingMessage.getAttribute('data-interval-id')); // Clear the animation interval
-            loadingMessage.style.display = 'none';
+            const chatBox = document.getElementById('chatBox');
+            const loadingDiv = chatBox.getAttribute('data-loading-div');
+            clearInterval(loadingDiv.getAttribute('data-interval-id')); // Clear the animation interval
+            chatBox.removeChild(loadingDiv); // Remove the loading message from chatbox
         }
 
         // Logout function
         function logout() {
-            localStorage.removeItem("jwt");
-            window.location.href = 'login.html'; // Redirect to login page after logout
+            localStorage.removeItem("jwt");  // Remove JWT token from local storage
+            window.location.href = 'login.html';  // Redirect to login page
         }
     </script>
 </body>
