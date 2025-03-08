@@ -1,64 +1,64 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Project Navigator</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <h1>Project Navigator</h1>
+/* General Styles */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #F2EDE1;
+    margin: 0;
+    padding: 0;
+}
 
-    <div class="container">
-        <h2>Sign Up</h2>
-        <input type="email" id="signupEmail" placeholder="Email">
-        <input type="password" id="signupPassword" placeholder="Password">
-        <button onclick="signup()">Sign Up</button>
+h1 {
+    font-size: 2em;
+    color: #80001A; /* Burgundy */
+    text-align: center;
+    margin-top: 20px;
+}
 
-        <h2>Login</h2>
-        <input type="email" id="loginEmail" placeholder="Email">
-        <input type="password" id="loginPassword" placeholder="Password">
-        <button onclick="login()">Login</button>
+.container {
+    max-width: 600px;
+    margin: auto;
+    padding: 20px;
+}
 
-        <p id="output"></p>
-    </div>
+/* Input Fields */
+input {
+    width: calc(100% - 20px);
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
 
-    <script>
-        const API_URL = "https://project-navigator-gzq4.onrender.com"; // Change to your backend URL
+/* Buttons */
+.button {
+    flex: 1;
+    margin: 5px;
+    padding: 10px;
+    color: #FFFFFF;
+    background-color: #80001A;  /* Burgundy color similar to Send button */
+    text-align: center;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
 
-        async function signup() {
-            const email = document.getElementById('signupEmail').value;
-            const password = document.getElementById('signupPassword').value;
+/* Buttons - Darker color on click */
+.button:active {
+    background-color: #600013;  /* Darker shade on click */
+}
 
-            const response = await fetch(`${API_URL}/signup`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password })
-            });
+.button.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
 
-            const data = await response.json();
-            document.getElementById("output").innerText = data.message || data.error;
-        }
+/* Style for the Sign Up and Login buttons */
+.button:hover {
+    background-color: #600013;  /* Darker shade on hover */
+}
 
-        async function login() {
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-
-            const response = await fetch(`${API_URL}/login`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password })
-            });
-
-            const data = await response.json();
-
-            if (data.token) {
-                localStorage.setItem("jwt", data.token); // Save token
-                window.location.href = 'main.html'; // Redirect to main page after login
-            } else {
-                document.getElementById("output").innerText = data.error;
-            }
-        }
-    </script>
-</body>
-</html>
+/* Output message */
+#output {
+    text-align: center;
+    margin-top: 20px;
+    color: #80001A;
+}
