@@ -1,6 +1,24 @@
+/* google font */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+/* custom font */
+@font-face {
+    font-family: 'Hiragino Sans';
+    src: url('fonts/Hiragino\ Sans.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'HiraginoSansGBw6';
+    src: url('fonts/HiraginoSansGBw6.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+}
+
 /* General Styles */
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Hiragino Sans', 'Roboto', 'HiraginoSansGBw6', Arial, sans-serif;
     background-color: #F2EDE1;
     margin: 0;
     padding: 0;
@@ -177,3 +195,6 @@ h1 {
     animation: loadingDots 1.5s infinite;
     white-space: nowrap;
 }
+
+
+
