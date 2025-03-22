@@ -3,62 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Project Navigator</title>
+    <title>Project Navigator</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* Full-screen video background */
+        #video-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Ensures the video covers the entire screen */
+            z-index: -1; /* Places the video behind other content */
+        }
+
+        /* Content styling to appear on top of the video */
+        .content {
+            position: relative;
+            z-index: 1;
+            color: white; /* Ensures text is visible on the video */
+            text-align: center;
+            padding-top: 20%;
+        }
+
+        /* Styling for the form */
+        form {
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            border-radius: 10px;
+            width: 300px;
+            margin: 0 auto;
+        }
+
+        /* Input field styles */
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        /* Submit button style */
+        input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            background-color: #800000; /* Burgundy */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #a52a2a; /* Lighter shade of burgundy */
+        }
+    </style>
 </head>
 <body>
-    <h1>Project Navigator</h1>
 
-    <div class="container">
-        <h2>Sign Up</h2>
-        <input type="email" id="signupEmail" placeholder="Email">
-        <input type="password" id="signupPassword" placeholder="Password">
-        <button class="button" onclick="signup()">Sign Up</button>
+    <!-- Video Background -->
+    <video id="video-background" autoplay loop muted>
+        <source src="path/to/your/video.mp4" type="video/mp4">
+        <source src="path/to/your/video.webm" type="video/webm">
+        Your browser does not support the video tag.
+    </video>
 
-        <h2>Login</h2>
-        <input type="email" id="loginEmail" placeholder="Email">
-        <input type="password" id="loginPassword" placeholder="Password">
-        <button class="button" onclick="login()">Login</button>
+    <!-- Content -->
+    <div class="content">
+        <h1>Welcome to Project Navigator</h1>
+        <form action="https://project-navigator-gzq4.onrender.com/login" method="POST">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" required>
 
-        <p id="output"></p>
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required>
+
+            <input type="submit" value="Login">
+        </form>
     </div>
 
-    <script>
-        const API_URL = "https://project-navigator-gzq4.onrender.com"; // Change to your backend URL
-
-        async function signup() {
-            const email = document.getElementById('signupEmail').value;
-            const password = document.getElementById('signupPassword').value;
-
-            const response = await fetch(`${API_URL}/signup`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password })
-            });
-
-            const data = await response.json();
-            document.getElementById("output").innerText = data.message || data.error;
-        }
-
-        async function login() {
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-
-            const response = await fetch(`${API_URL}/login`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password })
-            });
-
-            const data = await response.json();
-
-            if (data.token) {
-                localStorage.setItem("jwt", data.token); // Save token
-                window.location.href = 'main.html'; // Redirect to main page after login
-            } else {
-                document.getElementById("output").innerText = data.error;
-            }
-        }
-    </script>
 </body>
 </html>

@@ -1,200 +1,125 @@
-/* google font */
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
-
-/* custom font */
-@font-face {
-    font-family: 'Hiragino Sans';
-    src: url('fonts/Hiragino\ Sans.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
-}
-
-@font-face {
-    font-family: 'HiraginoSansGBw6';
-    src: url('fonts/HiraginoSansGBw6.otf') format('opentype');
-    font-weight: normal;
-    font-style: normal;
-}
-
-/* General Styles */
+/* General Layout */
 body {
-    font-family: 'Hiragino Sans', 'Roboto', 'HiraginoSansGBw6', Arial, sans-serif;
-    background-color: #F2EDE1;
+    font-family: 'Roboto', sans-serif;
     margin: 0;
     padding: 0;
+    overflow-x: hidden;
+    background-color: #f1f1f1;
 }
-h1 {
-    font-size: 2em;
-    color: #80001A; /* Burgundy */
+
+h1, h2 {
+    font-family: 'Hiragino Sans', sans-serif;
+}
+
+/* Index Page */
+.content {
+    position: relative;
+    z-index: 1;
+    color: white;
     text-align: center;
-    margin-top: 20px;
+    padding-top: 20%;
 }
-.container {
-    max-width: 600px;
-    margin: auto;
+
+/* Login Form Styles */
+form {
+    background-color: rgba(0, 0, 0, 0.5);
     padding: 20px;
-}
-
-/* Chat Box Styles */
-.chat-box {
-    background-color: #C2B097;
     border-radius: 10px;
-    padding: 10px;
-    height: 400px; /* Fixed height */
-    min-height: 300px; /* Ensure the chatbox does not shrink below this height */
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
+    width: 300px;
+    margin: 0 auto;
 }
 
-/* Message Styles */
-.message {
-    margin: 5px 0;
-    padding: 10px;
-    border-radius: 10px;
-    max-width: 75%;
-    word-wrap: break-word; /* Ensure long words wrap within the box */
-}
-
-.message.user {
-    background-color: #FFFFFF;
-    align-self: flex-end;
-    text-align: right;
-}
-
-.message.bot {
-    background-color: #FFFFFF;
-    align-self: flex-start;
-    white-space: pre-wrap;  /* Handle line breaks from PDF or long text */
-    word-wrap: break-word;  /* Ensure long words wrap */
-    overflow-wrap: break-word;  /* Prevent overflow in message */
-}
-
-/* Input Section */
-.input-section {
-    display: flex;
-    flex-direction: column;
-    margin-top: 10px;
-    background-color: #D1C0A6;
-    padding: 10px;
-    border-radius: 10px;
-}
-
-.input-section textarea, input {
-    width: calc(100% - 20px);
-    padding: 10px;
-    margin: 5px 0;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-}
-
-/* Buttons */
-.buttons {
-    display: flex;
-    justify-content: flex-start;
-}
-
-.button {
-    flex: 1;
-    margin: 5px;
-    padding: 10px;
-    color: #FFFFFF;
-    background-color: #80001A;
-    text-align: center;
-    border-radius: 8px;
-    cursor: pointer;
-}
-
-.button.disabled {
-    opacity: 0.5;
-    pointer-events: none;
-}
-
-/* File Button Style */
-.choose-file-button {
-    background-color: #80001A;
-    color: white;
-    padding: 10px;
-    border-radius: 8px;
-    text-align: center;
-    cursor: pointer;
-    margin-left: 10px; /* Space between buttons */
-}
-
-.choose-file-button:hover {
-    background-color: #600013; /* Darker shade on hover */
-}
-
-/* Logout Button Positioning */
-.logout-button {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: #80001A;
-    color: white;
-    padding: 10px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    width: calc(100% - 40px); /* Full width, with margin for borders */
-}
-
-.logout-button:hover {
-    background-color: #600013; /* Darker shade on hover */
-}
-
-.logout-button:active {
-    background-color: #40000A; /* Even darker shade on active */
-}
-
-/* Style for "Choose File" Label */
-.file-label {
-    background-color: #80001A;
-    color: white;
-    padding: 10px;
-    border-radius: 8px;
-    text-align: center;
-    cursor: pointer;
+input[type="text"], input[type="password"] {
     width: 100%;
-    display: inline-block;
+    padding: 10px;
     margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
 }
 
-.file-label:hover {
-    background-color: #600013; /* Darker shade on hover */
+input[type="submit"] {
+    width: 100%;
+    padding: 10px;
+    background-color: #800000;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
 }
 
-/* Loading Message Styles */
-.loading-message {
+input[type="submit"]:hover {
+    background-color: #a52a2a;
+}
+
+/* Main Page (Chat Interface) */
+.chat-container {
+    max-width: 800px;
+    margin: 0 auto;
     background-color: white;
-    color: #80001A;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #800000;
+    color: white;
     padding: 10px;
     border-radius: 10px;
-    max-width: 75%;
-    align-self: flex-start;
-    text-align: center;
-    font-size: 1.1em;
-    margin: 5px 0;
 }
 
-/* Loading Animation (3 dots) */
-@keyframes loadingDots {
-    0% {
-        content: "Loading.";
-    }
-    33% {
-        content: "Loading..";
-    }
-    66% {
-        content: "Loading...";
-    }
+.chat-box {
+    margin-top: 20px;
+    border-top: 1px solid #ccc;
 }
 
-.loading-message {
-    animation: loadingDots 1.5s infinite;
-    white-space: nowrap;
+#messages {
+    height: 300px;
+    overflow-y: auto;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 5px;
 }
 
+textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    resize: none;
+    height: 60px;
+}
 
+button {
+    background-color: #800000;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
 
+button:hover {
+    background-color: #a52a2a;
+}
+
+input[type="file"] {
+    margin-top: 10px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .chat-container {
+        width: 100%;
+        padding: 10px;
+    }
+
+    form {
+        width: 80%;
+    }
+}
