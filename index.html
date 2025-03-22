@@ -5,93 +5,102 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Project Navigator</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-        /* Apply black background, white text, and use HiraginoSansGBW6 font */
-        body {
-            background-color: black;
-            color: white;
-            font-family: 'Hiragino Sans GB W6', sans-serif;
-            margin: 0;
-            padding: 0;
-            overflow-x: hidden;
-        }
-
-        /* Full-screen video background */
-        #video-background {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover; /* Ensures the video covers the entire screen */
-            z-index: -1; /* Places the video behind other content */
-        }
-
-        /* Content styling to appear on top of the video */
-        .content {
-            position: relative;
-            z-index: 1;
-            text-align: center;
-            padding-top: 20%;
-        }
-
-        /* Styling for the form */
-        form {
-            background-color: rgba(0, 0, 0, 0.7); /* Slightly transparent black for contrast */
-            padding: 20px;
-            border-radius: 10px;
-            width: 300px;
-            margin: 0 auto;
-        }
-
-        /* Input field styles */
-        input[type="text"], input[type="password"] {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            color: black;
-        }
-
-        /* Submit button style */
-        input[type="submit"] {
-            width: 100%;
-            padding: 10px;
-            background-color: #800000; /* Burgundy */
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        input[type="submit"]:hover {
-            background-color: #a52a2a; /* Lighter shade of burgundy */
-        }
-    </style>
 </head>
 <body>
 
     <!-- Video Background -->
     <video id="video-background" autoplay loop muted>
-        <source src="path/to/your/video.mp4" type="video/mp4">
-        <source src="path/to/your/video.webm" type="video/webm">
+        <source src="EarthFootage.mp4" type="video/mp4">
+        <source src="EarthFootage.webm" type="video/webm">
         Your browser does not support the video tag.
     </video>
 
-    <!-- Content -->
+    <!-- Content Section -->
     <div class="content">
-        <h1 style="font-size: 100px">PROJECT NAVIGATOR</h1>
-        <form action="https://project-navigator-gzq4.onrender.com/login" method="POST">
-            <label for="username">Username</label>
-            <input type="text" id="username" name="username" required>
+        <h1>Project Navigator</h1>
 
-            <label for="password">Password</label>
-            <input type="password" id="password" name="password" required>
+        <!-- Sign Up Form -->
+        <div id="signup-form" class="signup-form">
+            <h2>Sign Up</h2>
+            <input type="email" id="signupEmail" placeholder="Email" required>
+            <input type="password" id="signupPassword" placeholder="Password" required>
+            <button class="button" onclick="signup()">Sign Up</button>
+        </div>
 
-            <input type="submit" value="Login">
-        </form>
+        <!-- Login Form -->
+        <div id="login-form" class="login-form">
+            <h2>Login</h2>
+            <input type="email" id="loginEmail" placeholder="Email" required>
+            <input type="password" id="loginPassword" placeholder="Password" required>
+            <button class="button" onclick="login()">Login</button>
+        </div>
+
+        <!-- Output/Error Message -->
+        <p id="output"></p>
+
+        <!-- Logout Button (visible after login) -->
+        <div id="logout-button" class="logout-button" style="display: none;">
+            <button onclick="logout()">Logout</button>
+        </div>
     </div>
+
+    <script>
+        const API_URL = "https://project-navigator-gzq4.onrender.com"; // Backend URL
+
+        async function signup() {
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+
+            const response = await fetch(`${API_URL}/signup`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password })
+            });
+
+            const data = await response.json();
+            document.getElementById("output").innerText = data.message || data.error;
+        }
+
+        async function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            const response = await fetch(`${API_URL}/login`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password })
+            });
+
+            const data = await response.json();
+
+            if (data.token) {
+                localStorage.setItem("jwt", data.token); // Save JWT token
+                loginSuccess();
+                window.location.href = 'main.html'; // Redirect to main page
+            } else {
+                document.getElementById("output").innerText = data.error;
+            }
+        }
+
+        function loginSuccess() {
+            document.getElementById('signup-form').style.display = 'none'; // Hide sign-up form
+            document.getElementById('login-form').style.display = 'none'; // Hide login form
+            document.getElementById('logout-button').style.display = 'block'; // Show logout button
+        }
+
+        function logout() {
+            localStorage.removeItem('jwt'); // Remove JWT token
+            document.getElementById('signup-form').style.display = 'block'; // Show sign-up form
+            document.getElementById('login-form').style.display = 'block'; // Show login form
+            document.getElementById('logout-button').style.display = 'none'; // Hide logout button
+            window.location.href = 'index.html'; // Redirect to login page
+        }
+
+        // Check if the user is already logged in
+        if (localStorage.getItem('jwt')) {
+            loginSuccess();
+        }
+    </script>
 
 </body>
 </html>
