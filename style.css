@@ -1,28 +1,25 @@
 /* General Layout */
 body {
-    font-family: 'Roboto', sans-serif;
+    background-color: black;
+    color: white;
+    font-family: 'Hiragino Sans GB W6', sans-serif;
     margin: 0;
     padding: 0;
     overflow-x: hidden;
-    background-color: #f1f1f1;
 }
 
-h1, h2 {
-    font-family: 'Hiragino Sans', sans-serif;
-}
-
-/* Index Page */
+/* Content for index.html */
 .content {
     position: relative;
     z-index: 1;
-    color: white;
+    color: white; /* Ensures text is white */
     text-align: center;
     padding-top: 20%;
 }
 
-/* Login Form Styles */
+/* Styling for the login form */
 form {
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.7); /* Transparent black for form background */
     padding: 20px;
     border-radius: 10px;
     width: 300px;
@@ -35,12 +32,13 @@ input[type="text"], input[type="password"] {
     margin: 10px 0;
     border: 1px solid #ccc;
     border-radius: 5px;
+    color: black; /* Ensures text inside input fields is black for readability */
 }
 
 input[type="submit"] {
     width: 100%;
     padding: 10px;
-    background-color: #800000;
+    background-color: #800000; /* Burgundy */
     color: white;
     border: none;
     border-radius: 5px;
@@ -48,78 +46,28 @@ input[type="submit"] {
 }
 
 input[type="submit"]:hover {
-    background-color: #a52a2a;
+    background-color: #a52a2a; /* Lighter shade of burgundy */
 }
 
-/* Main Page (Chat Interface) */
-.chat-container {
-    max-width: 800px;
-    margin: 0 auto;
-    background-color: white;
-    border-radius: 10px;
-    padding: 20px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+/* Optional: Adjustments for labels */
+label {
+    font-size: 16px;
+    font-weight: bold;
 }
 
-.chat-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #800000;
-    color: white;
-    padding: 10px;
-    border-radius: 10px;
+/* Optional: Styling the heading */
+h1 {
+    font-size: 2em;
+    font-weight: normal;
 }
 
-.chat-box {
-    margin-top: 20px;
-    border-top: 1px solid #ccc;
-}
-
-#messages {
-    height: 300px;
-    overflow-y: auto;
-    padding: 10px;
-    background-color: #f9f9f9;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-}
-
-textarea {
+/* Video background */
+#video-background {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
-    padding: 10px;
-    margin-top: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    resize: none;
-    height: 60px;
-}
-
-button {
-    background-color: #800000;
-    color: white;
-    padding: 10px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-button:hover {
-    background-color: #a52a2a;
-}
-
-input[type="file"] {
-    margin-top: 10px;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    .chat-container {
-        width: 100%;
-        padding: 10px;
-    }
-
-    form {
-        width: 80%;
-    }
+    height: 100%;
+    object-fit: cover;
+    z-index: -1; /* Places the video behind the content */
 }
