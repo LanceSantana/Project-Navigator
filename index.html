@@ -6,6 +6,16 @@
     <title>Project Navigator</title>
     <link rel="stylesheet" href="style.css">
     <style>
+        /* Apply black background, white text, and use HiraginoSansGBW6 font */
+        body {
+            background-color: black;
+            color: white;
+            font-family: 'Hiragino Sans GB W6', sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
         /* Full-screen video background */
         #video-background {
             position: absolute;
@@ -21,14 +31,13 @@
         .content {
             position: relative;
             z-index: 1;
-            color: white; /* Ensures text is visible on the video */
             text-align: center;
             padding-top: 20%;
         }
 
         /* Styling for the form */
         form {
-            background-color: rgba(0, 0, 0, 0.5);
+            background-color: rgba(0, 0, 0, 0.7); /* Slightly transparent black for contrast */
             padding: 20px;
             border-radius: 10px;
             width: 300px;
@@ -42,6 +51,7 @@
             margin: 10px 0;
             border: 1px solid #ccc;
             border-radius: 5px;
+            color: black;
         }
 
         /* Submit button style */
