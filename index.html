@@ -46,33 +46,33 @@
 
     <script>
         const API_URL = "https://project-navigator-gzq4.onrender.com"; // Backend URL
-
+    
         async function signup() {
             const email = document.getElementById('signupEmail').value;
             const password = document.getElementById('signupPassword').value;
-
+    
             const response = await fetch(`${API_URL}/signup`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, password })
             });
-
+    
             const data = await response.json();
             document.getElementById("output").innerText = data.message || data.error;
         }
-
+    
         async function login() {
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
-
+    
             const response = await fetch(`${API_URL}/login`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, password })
             });
-
+    
             const data = await response.json();
-
+    
             if (data.token) {
                 localStorage.setItem("jwt", data.token); // Save JWT token
                 loginSuccess();
@@ -81,26 +81,30 @@
                 document.getElementById("output").innerText = data.error;
             }
         }
-
+    
         function loginSuccess() {
             document.getElementById('signup-form').style.display = 'none'; // Hide sign-up form
             document.getElementById('login-form').style.display = 'none'; // Hide login form
             document.getElementById('logout-button').style.display = 'block'; // Show logout button
         }
-
+    
         function logout() {
             localStorage.removeItem('jwt'); // Remove JWT token
             document.getElementById('signup-form').style.display = 'block'; // Show sign-up form
             document.getElementById('login-form').style.display = 'block'; // Show login form
             document.getElementById('logout-button').style.display = 'none'; // Hide logout button
-            window.location.href = 'index.html'; // Redirect to login page
         }
-
-        // Check if the user is already logged in
-        if (localStorage.getItem('jwt')) {
-            loginSuccess();
-        }
+    
+        // ✅ Fix: Ensure login form is visible on page load
+        document.addEventListener("DOMContentLoaded", function () {
+            if (localStorage.getItem('jwt')) {
+                loginSuccess(); // If logged in, show logout
+            } else {
+                document.getElementById('login-form').style.display = 'block'; // Ensure login button shows up
+            }
+        });
     </script>
+    
 
 </body>
 </html>
