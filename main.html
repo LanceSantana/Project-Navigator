@@ -121,6 +121,44 @@
         }
 
         // Show loading message inside chatbox
+function showLoadingMessage() {
+    const chatBox = document.getElementById('chatBox');
+    const loadingDiv = document.createElement('div');
+    loadingDiv.className = 'loading-message';  // Apply styling
+    loadingDiv.textContent = 'Loading.'; // Start with a single dot
+
+    // Append the loading message as a bot message (left side)
+    chatBox.appendChild(loadingDiv);
+    chatBox.scrollTop = chatBox.scrollHeight;  // Auto-scroll to bottom
+
+    // Start the animation with dots changing
+    let dotCount = 1;
+    const interval = setInterval(() => {
+        if (dotCount === 3) {
+            dotCount = 1;
+        }
+        loadingDiv.textContent = `Loading${'.'.repeat(dotCount)}`;
+        dotCount++;
+    }, 500);
+
+    // Store interval ID for clearing later
+    loadingDiv.setAttribute('data-interval-id', interval);
+    chatBox.setAttribute('data-loading-div', loadingDiv);
+}
+
+// Hide loading message
+function hideLoadingMessage() {
+    const chatBox = document.getElementById('chatBox');
+    const loadingDiv = chatBox.querySelector('.loading-message');
+    
+    if (loadingDiv) {
+        clearInterval(loadingDiv.getAttribute('data-interval-id')); // Stop animation
+        chatBox.removeChild(loadingDiv); // Remove loading message
+    }
+}
+
+        /*
+        // Show loading message inside chatbox
         function showLoadingMessage() {
             const chatBox = document.getElementById('chatBox');
             const loadingDiv = document.createElement('div');
@@ -152,6 +190,7 @@
             clearInterval(loadingDiv.getAttribute('data-interval-id')); // Clear the animation interval
             chatBox.removeChild(loadingDiv); // Remove the loading message from chatbox
         }
+*/
 
         // Logout function
         function logout() {
