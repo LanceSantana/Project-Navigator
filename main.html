@@ -4,104 +4,93 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Main - Project Navigator</title>
-    <link rel="stylesheet" href="style.css"> <!-- Link to external CSS file -->
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Project Navigator</h1>
-
-    <div class="container">
-        <!-- Chat Box where messages will appear -->
-        <div class="chat-box" id="chatBox"></div>
-
-        <!-- Input Section for User -->
-        <div class="input-section">
-            <textarea id="userInput" placeholder="Type your message..."></textarea>
-            <div class="buttons">
-                <div class="button" id="sendButton">Send</div>
-                <!-- Add "Choose File" button next to "Send" -->
-                <label for="pdfInput" class="button choose-file-button">Choose File(pdf)</label>
-                <!-- Hidden PDF input -->
-                <input type="file" id="pdfInput" onchange="uploadPDF()" style="display: none;">
-            </div>
-        </div>
+    <div class="sidebar">
+        <h2>Recent History</h2>
+        <ul id="historyList"></ul>
     </div>
 
-    <button class="logout-button" onclick="logout()">Logout</button>
+    <div class="main-content">
+        <h1>Project Navigator</h1>
 
-    <pre id="output"></pre>
+        <div class="container">
+            <div class="chat-box" id="chatBox"></div>
+
+            <div class="input-section">
+                <textarea id="userInput" placeholder="Type your message..."></textarea>
+                <div class="buttons">
+                    <div class="button" id="sendButton">Send</div>
+                    <label for="pdfInput" class="button choose-file-button">Choose File(pdf)</label>
+                    <input type="file" id="pdfInput" onchange="uploadPDF()" style="display: none;">
+                </div>
+            </div>
+        </div>
+
+        <button class="logout-button" onclick="logout()">Logout</button>
+        <pre id="output"></pre>
+    </div>
 
     <script>
-        const API_URL = "https://project-navigator-gzq4.onrender.com"; // Your backend URL
+        const API_URL = "https://project-navigator-gzq4.onrender.com";
 
-        // Function to send the message
         async function sendMessage() {
             const userInput = document.getElementById('userInput');
             const message = userInput.value.trim();
+            if (!message) return;
 
-            if (!message) return; // Prevent sending empty messages
-
-            appendMessage(message, true);  // Append user message
-            userInput.value = ''; // Clear input field
-
-            // Show loading message
+            appendMessage(message, true);
+            userInput.value = '';
             showLoadingMessage();
 
-            // Send message to backend server
             const response = await fetch(`${API_URL}/chat`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${localStorage.getItem('jwt')}` // Authentication header
+                    "Authorization": `Bearer ${localStorage.getItem('jwt')}`
                 },
-                body: JSON.stringify({ projectId: "12345", message }) // Dynamic projectId
+                body: JSON.stringify({ projectId: "12345", message })
             });
 
             const data = await response.json();
 
-            // Hide loading message and append response from AI
             hideLoadingMessage();
-            appendMessage(data.chatGptReply || "No response from AI.", false); // Append response from AI
+            appendMessage(data.chatGptReply || "No response from AI.", false);
+
+            saveConversation({
+                title: message.slice(0, 20),
+                messages: [
+                    { text: message, isUser: true },
+                    { text: data.chatGptReply || "No response", isUser: false }
+                ]
+            });
         }
 
-        // Event listener for sending messages when button is clicked
         document.getElementById('sendButton').addEventListener('click', sendMessage);
 
-        // Append messages to the chat box
         function appendMessage(content, isUser) {
             const chatBox = document.getElementById('chatBox');
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
             messageDiv.textContent = content;
             chatBox.appendChild(messageDiv);
-
-            // Ensure the chatbox scrolls to the latest message
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        // Automatically resize the text area based on the text content
         const userInput = document.getElementById('userInput');
         userInput.addEventListener('input', function () {
-            this.style.height = 'auto';  // Reset height to auto before recalculating
-            this.style.height = (this.scrollHeight) + 'px';  // Adjust height to content
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
         });
 
-        // Function to handle PDF upload
         async function uploadPDF() {
             const fileInput = document.getElementById('pdfInput');
             const file = fileInput.files[0];
             const token = localStorage.getItem("jwt");
 
-            if (!file) {
-                alert("Please select a PDF file!");
-                return;
-            }
+            if (!file || !token) return;
 
-            if (!token) {
-                alert("You must be logged in to upload a PDF.");
-                return;
-            }
-
-            // Show loading message
             showLoadingMessage();
 
             const formData = new FormData();
@@ -114,89 +103,71 @@
             });
 
             const data = await response.json();
-
-            // Hide loading message and append PDF output to chatbox
             hideLoadingMessage();
-            appendMessage(data.chatGptReply || data.error, false); // Append PDF output to chatbox
+            appendMessage(data.chatGptReply || data.error, false);
         }
 
-        // Show loading message inside chatbox
-function showLoadingMessage() {
-    const chatBox = document.getElementById('chatBox');
-    const loadingDiv = document.createElement('div');
-    loadingDiv.className = 'loading-message';  // Apply styling
-    loadingDiv.textContent = 'Loading.'; // Start with a single dot
-
-    // Append the loading message as a bot message (left side)
-    chatBox.appendChild(loadingDiv);
-    chatBox.scrollTop = chatBox.scrollHeight;  // Auto-scroll to bottom
-
-    // Start the animation with dots changing
-    let dotCount = 1;
-    const interval = setInterval(() => {
-        if (dotCount === 3) {
-            dotCount = 1;
-        }
-        loadingDiv.textContent = `Loading${'.'.repeat(dotCount)}`;
-        dotCount++;
-    }, 500);
-
-    // Store interval ID for clearing later
-    loadingDiv.setAttribute('data-interval-id', interval);
-    chatBox.setAttribute('data-loading-div', loadingDiv);
-}
-
-// Hide loading message
-function hideLoadingMessage() {
-    const chatBox = document.getElementById('chatBox');
-    const loadingDiv = chatBox.querySelector('.loading-message');
-    
-    if (loadingDiv) {
-        clearInterval(loadingDiv.getAttribute('data-interval-id')); // Stop animation
-        chatBox.removeChild(loadingDiv); // Remove loading message
-    }
-}
-
-        /*
-        // Show loading message inside chatbox
         function showLoadingMessage() {
             const chatBox = document.getElementById('chatBox');
             const loadingDiv = document.createElement('div');
-            loadingDiv.className = 'loading-message';
-            loadingDiv.textContent = 'Loading.'; // Start with the first frame
+            loadingDiv.className = 'message bot loading-message';
+            loadingDiv.textContent = 'Loading.';
             chatBox.appendChild(loadingDiv);
 
-            // Store the loading div for removal later
-            chatBox.setAttribute('data-loading-div', loadingDiv);
+            chatBox.setAttribute('data-loading-div-id', loadingDiv);
 
-            // Start the animation
             let dotCount = 1;
             const interval = setInterval(() => {
-                if (dotCount === 3) {
-                    dotCount = 1;
-                }
+                if (dotCount === 3) dotCount = 1;
                 loadingDiv.textContent = `Loading${'.'.repeat(dotCount)}`;
                 dotCount++;
-            }, 500); // Change the message every 500ms
+            }, 500);
 
-            // Store interval ID to clear it later
             loadingDiv.setAttribute('data-interval-id', interval);
         }
 
-        // Hide loading message
         function hideLoadingMessage() {
             const chatBox = document.getElementById('chatBox');
-            const loadingDiv = chatBox.getAttribute('data-loading-div');
-            clearInterval(loadingDiv.getAttribute('data-interval-id')); // Clear the animation interval
-            chatBox.removeChild(loadingDiv); // Remove the loading message from chatbox
-        }
-*/
+            const loadingDiv = chatBox.querySelector('.loading-message');
+            if (!loadingDiv) return;
 
-        // Logout function
-        function logout() {
-            localStorage.removeItem("jwt");  // Remove JWT token from local storage
-            window.location.href = 'index.html';  // Redirect to login page
+            clearInterval(loadingDiv.getAttribute('data-interval-id'));
+            chatBox.removeChild(loadingDiv);
         }
+
+        function logout() {
+            localStorage.removeItem("jwt");
+            window.location.href = 'index.html';
+        }
+
+        function saveConversation(convo) {
+            let history = JSON.parse(localStorage.getItem('chatHistory')) || [];
+            history.unshift(convo);
+            if (history.length > 10) history.pop();
+            localStorage.setItem('chatHistory', JSON.stringify(history));
+            renderHistoryList();
+        }
+
+        function renderHistoryList() {
+            const historyList = document.getElementById('historyList');
+            historyList.innerHTML = '';
+            const history = JSON.parse(localStorage.getItem('chatHistory')) || [];
+
+            history.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.textContent = item.title || `Conversation ${index + 1}`;
+                li.onclick = () => loadConversation(item);
+                historyList.appendChild(li);
+            });
+        }
+
+        function loadConversation(convo) {
+            const chatBox = document.getElementById('chatBox');
+            chatBox.innerHTML = '';
+            convo.messages.forEach(msg => appendMessage(msg.text, msg.isUser));
+        }
+
+        renderHistoryList();
     </script>
 </body>
 </html>

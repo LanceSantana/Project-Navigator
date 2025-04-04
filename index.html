@@ -1,110 +1,107 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Project Navigator</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Project Navigator</title>
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
 
-    <!-- Video Background -->
-    <video id="video-background" autoplay loop muted>
-        <source src="EarthFootage.mp4" type="video/mp4">
-        <source src="EarthFootage.webm" type="video/webm">
-        Your browser does not support the video tag.
-    </video>
+  <!-- Video Background -->
+  <video id="video-background" autoplay loop muted>
+    <source src="EarthFootage.mp4" type="video/mp4">
+    <source src="EarthFootage.webm" type="video/webm">
+    Your browser does not support the video tag.
+  </video>
 
-    <!-- Content Section -->
-    <div class="content">
-        <h1 style="font-size: 100px">Project Navigator</h1>
+  <!-- Centered Content Section -->
+  <div class="content centered">
+    <h1 class="main-title">Project Navigator</h1>
 
-        <!-- Sign Up Form -->
-        <div id="signup-form" class="signup-form">
-            <h2>Sign Up</h2>
-            <input type="email" id="signupEmail" placeholder="Email" required>
-            <input type="password" id="signupPassword" placeholder="Password" required>
-            <button class="button" onclick="signup()">Sign Up</button>
-        </div>
-
-        <!-- Login Form -->
-        <div id="login-form" class="login-form">
-            <h2>Login</h2>
-            <input type="email" id="loginEmail" placeholder="Email" required>
-            <input type="password" id="loginPassword" placeholder="Password" required>
-            <button class="button" onclick="login()">Login</button>
-        </div>
-
-        <!-- Output/Error Message -->
-        <p id="output"></p>
-
-        <!-- Logout Button (visible after login) -->
-        <div id="logout-button" class="logout-button" style="display: none;">
-            <button onclick="logout()">Begin</button>
-        </div>
+    <!-- Sign Up Form -->
+    <div id="signup-form" class="auth-form">
+      <h2>Sign Up</h2>
+      <input type="email" id="signupEmail" placeholder="Email" required>
+      <input type="password" id="signupPassword" placeholder="Password" required>
+      <button class="button" onclick="signup()">Sign Up</button>
     </div>
 
-    <script>
-        const API_URL = "https://project-navigator-gzq4.onrender.com"; // Backend URL
-    
-        async function signup() {
-            const email = document.getElementById('signupEmail').value;
-            const password = document.getElementById('signupPassword').value;
-    
-            const response = await fetch(`${API_URL}/signup`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password })
-            });
-    
-            const data = await response.json();
-            document.getElementById("output").innerText = data.message || data.error;
-        }
-    
-        async function login() {
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-    
-            const response = await fetch(`${API_URL}/login`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password })
-            });
-    
-            const data = await response.json();
-    
-            if (data.token) {
-                localStorage.setItem("jwt", data.token); // Save JWT token
-                loginSuccess();
-                window.location.href = 'main.html'; // Redirect to main page
-            } else {
-                document.getElementById("output").innerText = data.error;
-            }
-        }
-    
-        function loginSuccess() {
-            document.getElementById('signup-form').style.display = 'none'; // Hide sign-up form
-            document.getElementById('login-form').style.display = 'none'; // Hide login form
-            document.getElementById('logout-button').style.display = 'block'; // Show logout button
-        }
-    
-        function logout() {
-            localStorage.removeItem('jwt'); // Remove JWT token
-            document.getElementById('signup-form').style.display = 'block'; // Show sign-up form
-            document.getElementById('login-form').style.display = 'block'; // Show login form
-            document.getElementById('logout-button').style.display = 'none'; // Hide logout button
-        }
-    
-        // ✅ Fix: Ensure login form is visible on page load
-        document.addEventListener("DOMContentLoaded", function () {
-            if (localStorage.getItem('jwt')) {
-                loginSuccess(); // If logged in, show logout
-            } else {
-                document.getElementById('login-form').style.display = 'block'; // Ensure login button shows up
-            }
-        });
-    </script>
-    
+    <!-- Login Form -->
+    <div id="login-form" class="auth-form">
+      <h2>Login</h2>
+      <input type="email" id="loginEmail" placeholder="Email" required>
+      <input type="password" id="loginPassword" placeholder="Password" required>
+      <button class="button" onclick="login()">Login</button>
+    </div>
 
+    <!-- Output/Error Message -->
+    <p id="output"></p>
+
+    <!-- Logout Button (visible after login) -->
+    <div id="logout-button" class="auth-form" style="display: none;">
+      <button class="button" onclick="logout()">Begin</button>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "https://project-navigator-gzq4.onrender.com";
+
+    async function signup() {
+      const email = document.getElementById('signupEmail').value;
+      const password = document.getElementById('signupPassword').value;
+
+      const response = await fetch(`${API_URL}/signup`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await response.json();
+      document.getElementById("output").innerText = data.message || data.error;
+    }
+
+    async function login() {
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+
+      const response = await fetch(`${API_URL}/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await response.json();
+
+      if (data.token) {
+        localStorage.setItem("jwt", data.token);
+        loginSuccess();
+        window.location.href = 'main.html';
+      } else {
+        document.getElementById("output").innerText = data.error;
+      }
+    }
+
+    function loginSuccess() {
+      document.getElementById('signup-form').style.display = 'none';
+      document.getElementById('login-form').style.display = 'none';
+      document.getElementById('logout-button').style.display = 'block';
+    }
+
+    function logout() {
+      localStorage.removeItem('jwt');
+      document.getElementById('signup-form').style.display = 'block';
+      document.getElementById('login-form').style.display = 'block';
+      document.getElementById('logout-button').style.display = 'none';
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      if (localStorage.getItem('jwt')) {
+        loginSuccess();
+      } else {
+        document.getElementById('login-form').style.display = 'block';
+      }
+    });
+  </script>
 </body>
 </html>
