@@ -24,13 +24,238 @@ const userSchema = new mongoose.Schema({
     }
 });
 
+// Project Schema
+const projectSchema = new mongoose.Schema({
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    },
+    name: {
+        type: String,
+        required: true
+    },
+    description: String,
+    currentPhase: {
+        type: String,
+        enum: ['Planning', 'Execution', 'Monitoring', 'Closure'],
+        default: 'Planning'
+    },
+    phaseDetails: {
+        planning: {
+            startDate: Date,
+            endDate: Date,
+            completed: Boolean,
+            deliverables: [String],
+            risks: [String],
+            stakeholders: [String]
+        },
+        execution: {
+            startDate: Date,
+            endDate: Date,
+            completed: Boolean,
+            milestones: [{
+                name: String,
+                dueDate: Date,
+                status: {
+                    type: String,
+                    enum: ['Not Started', 'In Progress', 'Completed', 'Delayed'],
+                    default: 'Not Started'
+                }
+            }],
+            resources: [{
+                name: String,
+                type: String,
+                status: String
+            }]
+        },
+        monitoring: {
+            startDate: Date,
+            endDate: Date,
+            completed: Boolean,
+            metrics: [{
+                name: String,
+                target: Number,
+                current: Number,
+                unit: String
+            }],
+            risks: [{
+                description: String,
+                impact: String,
+                probability: String,
+                mitigation: String,
+                status: String
+            }]
+        },
+        closure: {
+            startDate: Date,
+            endDate: Date,
+            completed: Boolean,
+            deliverables: [{
+                name: String,
+                status: String,
+                reviewNotes: String
+            }],
+            lessonsLearned: [String]
+        }
+    },
+    status: {
+        type: String,
+        enum: ['On Track', 'At Risk', 'Off Track', 'Completed'],
+        default: 'On Track'
+    },
+    tasks: [{
+        title: String,
+        description: String,
+        status: {
+            type: String,
+            enum: ['To Do', 'In Progress', 'Done'],
+            default: 'To Do'
+        },
+        dueDate: Date,
+        assignedTo: String,
+        phase: {
+            type: String,
+            enum: ['Planning', 'Execution', 'Monitoring', 'Closure'],
+            required: true
+        }
+    }],
+    documents: [{
+        name: String,
+        type: String,
+        content: String,
+        phase: {
+            type: String,
+            enum: ['Planning', 'Execution', 'Monitoring', 'Closure'],
+            required: true
+        },
+        uploadDate: {
+            type: Date,
+            default: Date.now
+        }
+    }],
+    createdAt: {
+        type: Date,
+        default: Date.now
+    }
+});
+
+// Chat Message Schema
+const chatMessageSchema = new mongoose.Schema({
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    },
+    projectId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Project',
+        required: true
+    },
+    message: {
+        type: String,
+        required: true
+    },
+    isUser: {
+        type: Boolean,
+        required: true
+    },
+    timestamp: {
+        type: Date,
+        default: Date.now
+    }
+});
+
 const User = mongoose.model('User', userSchema);
+const Project = mongoose.model('Project', projectSchema);
+const ChatMessage = mongoose.model('ChatMessage', chatMessageSchema);
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
 const PORT = 5000;
+
+// Middleware to verify JWT token
+const authenticateToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) {
+        return res.status(401).json({ error: 'Access denied' });
+    }
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+        if (err) {
+            return res.status(403).json({ error: 'Invalid token' });
+        }
+        req.user = user;
+        next();
+    });
+};
+
+// Create new project
+app.post('/projects', authenticateToken, async (req, res) => {
+    try {
+        const { name, description } = req.body;
+        const project = new Project({
+            userId: req.user.userId,
+            name,
+            description
+        });
+        await project.save();
+        res.json(project);
+    } catch (error) {
+        console.error('Error creating project:', error);
+        res.status(500).json({ error: 'Error creating project' });
+    }
+});
+
+// Get user's projects
+app.get('/projects', authenticateToken, async (req, res) => {
+    try {
+        const projects = await Project.find({ userId: req.user.userId });
+        res.json(projects);
+    } catch (error) {
+        console.error('Error fetching projects:', error);
+        res.status(500).json({ error: 'Error fetching projects' });
+    }
+});
+
+// Get project details
+app.get('/projects/:projectId', authenticateToken, async (req, res) => {
+    try {
+        const project = await Project.findOne({
+            _id: req.params.projectId,
+            userId: req.user.userId
+        });
+        if (!project) {
+            return res.status(404).json({ error: 'Project not found' });
+        }
+        res.json(project);
+    } catch (error) {
+        console.error('Error fetching project:', error);
+        res.status(500).json({ error: 'Error fetching project' });
+    }
+});
+
+// Update project
+app.put('/projects/:projectId', authenticateToken, async (req, res) => {
+    try {
+        const project = await Project.findOneAndUpdate(
+            { _id: req.params.projectId, userId: req.user.userId },
+            { $set: req.body },
+            { new: true }
+        );
+        if (!project) {
+            return res.status(404).json({ error: 'Project not found' });
+        }
+        res.json(project);
+    } catch (error) {
+        console.error('Error updating project:', error);
+        res.status(500).json({ error: 'Error updating project' });
+    }
+});
 
 // Signup endpoint
 app.post('/signup', async (req, res) => {
@@ -78,7 +303,7 @@ app.post('/login', async (req, res) => {
         }
 
         // Generate JWT token
-        const token = jwt.sign({ email: user.email }, process.env.JWT_SECRET, { expiresIn: '24h' });
+        const token = jwt.sign({ userId: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '24h' });
         
         res.json({ token });
     } catch (error) {
@@ -87,36 +312,76 @@ app.post('/login', async (req, res) => {
     }
 });
 
-// Middleware to verify JWT token
-const authenticateToken = (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-
-    if (!token) {
-        return res.status(401).json({ error: 'Access denied' });
+// Get chat history endpoint
+app.get('/chat-history/:projectId', authenticateToken, async (req, res) => {
+    try {
+        const messages = await ChatMessage.find({ 
+            userId: req.user.userId,
+            projectId: req.params.projectId
+        })
+        .sort({ timestamp: 1 })
+        .limit(50);
+        
+        res.json({ messages });
+    } catch (error) {
+        console.error('Error fetching chat history:', error);
+        res.status(500).json({ error: 'Error fetching chat history' });
     }
-
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-        if (err) {
-            return res.status(403).json({ error: 'Invalid token' });
-        }
-        req.user = user;
-        next();
-    });
-};
+});
 
 // OpenAI API Endpoint (protected)
 app.post('/chat', authenticateToken, async (req, res) => {
     try {
-        const userMessage = req.body.message;
+        const { projectId, message } = req.body;
+        
+        // Verify project exists and belongs to user
+        const project = await Project.findOne({
+            _id: projectId,
+            userId: req.user.userId
+        });
+        if (!project) {
+            return res.status(404).json({ error: 'Project not found' });
+        }
+
+        // Store user's message
+        await ChatMessage.create({
+            userId: req.user.userId,
+            projectId,
+            message,
+            isUser: true
+        });
+
+        // Get detailed project context for ChatGPT
+        const projectContext = `
+            Project Name: ${project.name}
+            Description: ${project.description}
+            Current Phase: ${project.currentPhase}
+            Overall Status: ${project.status}
+            
+            Phase Details:
+            ${JSON.stringify(project.phaseDetails[project.currentPhase.toLowerCase()], null, 2)}
+            
+            Tasks in Current Phase:
+            ${JSON.stringify(project.tasks.filter(t => t.phase === project.currentPhase), null, 2)}
+            
+            Documents in Current Phase:
+            ${JSON.stringify(project.documents.filter(d => d.phase === project.currentPhase), null, 2)}
+        `;
 
         const response = await axios.post(
             'https://api.openai.com/v1/chat/completions',
             {
                 model: 'gpt-4',
                 messages: [
-                    { role: 'system', content: 'You are a project management chatbot.' },
-                    { role: 'user', content: userMessage }
+                    { 
+                        role: 'system', 
+                        content: `You are a project management assistant that understands project phases and workflows. 
+                        You are currently in the ${project.currentPhase} phase of the project.
+                        Your responses should be contextual to the current phase and project status.
+                        You can suggest phase-specific actions, track progress, and provide relevant insights.
+                        Here is the current project context: ${projectContext}`
+                    },
+                    { role: 'user', content: message }
                 ]
             },
             {
@@ -127,11 +392,82 @@ app.post('/chat', authenticateToken, async (req, res) => {
             }
         );
 
-        res.json({ reply: response.data.choices[0].message.content });
+        const aiResponse = response.data.choices[0].message.content;
+        
+        // Store AI's response
+        await ChatMessage.create({
+            userId: req.user.userId,
+            projectId,
+            message: aiResponse,
+            isUser: false
+        });
+
+        // Check if the AI response contains project updates
+        if (aiResponse.includes('UPDATE_PROJECT:')) {
+            const updates = JSON.parse(aiResponse.split('UPDATE_PROJECT:')[1]);
+            await Project.findOneAndUpdate(
+                { _id: projectId },
+                { $set: updates }
+            );
+        }
+
+        // Check if the AI response suggests phase transition
+        if (aiResponse.includes('TRANSITION_PHASE:')) {
+            const newPhase = aiResponse.split('TRANSITION_PHASE:')[1].trim();
+            if (['Planning', 'Execution', 'Monitoring', 'Closure'].includes(newPhase)) {
+                await Project.findOneAndUpdate(
+                    { _id: projectId },
+                    { 
+                        $set: { 
+                            currentPhase: newPhase,
+                            [`phaseDetails.${project.currentPhase.toLowerCase()}.completed`]: true,
+                            [`phaseDetails.${newPhase.toLowerCase()}.startDate`]: new Date()
+                        }
+                    }
+                );
+            }
+        }
+
+        res.json({ reply: aiResponse });
 
     } catch (error) {
         console.error('Error:', error.response ? error.response.data : error.message);
         res.status(500).json({ error: 'Something went wrong' });
+    }
+});
+
+// Test endpoint to check MongoDB connection and data
+app.get('/test-db', async (req, res) => {
+    try {
+        // Check connection
+        const connectionState = mongoose.connection.readyState;
+        const connectionStatus = {
+            0: 'disconnected',
+            1: 'connected',
+            2: 'connecting',
+            3: 'disconnecting'
+        }[connectionState];
+
+        // Get counts from collections
+        const userCount = await User.countDocuments();
+        const projectCount = await Project.countDocuments();
+        const messageCount = await ChatMessage.countDocuments();
+
+        res.json({
+            status: 'success',
+            connection: connectionStatus,
+            collections: {
+                users: userCount,
+                projects: projectCount,
+                messages: messageCount
+            }
+        });
+    } catch (error) {
+        console.error('Database test error:', error);
+        res.status(500).json({
+            status: 'error',
+            message: error.message
+        });
     }
 });
 
