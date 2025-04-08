@@ -15,6 +15,41 @@
     <div class="main-content">
         <h1>Project Navigator</h1>
 
+    <!-- Project Selection Section -->
+    <div class="project-section">
+        <select id="projectSelect">
+            <option value="">Select a Project</option>
+        </select>
+        <button id="newProjectBtn">New Project</button>
+    </div>
+
+    <!-- Project Phase Display -->
+    <div class="phase-section" id="phaseSection" style="display: none;">
+        <div class="phase-indicator">
+            <span class="phase-label">Current Phase:</span>
+            <span class="phase-value" id="currentPhase">Planning</span>
+        </div>
+        <div class="phase-progress">
+            <div class="phase-bar">
+                <div class="phase-marker planning active" data-phase="Planning">Planning</div>
+                <div class="phase-marker execution" data-phase="Execution">Execution</div>
+                <div class="phase-marker monitoring" data-phase="Monitoring">Monitoring</div>
+                <div class="phase-marker closure" data-phase="Closure">Closure</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Project Form (hidden by default) -->
+    <div id="newProjectForm" class="form-container" style="display: none;">
+        <h2>Create New Project</h2>
+        <input type="text" id="projectName" placeholder="Project Name">
+        <textarea id="projectDescription" placeholder="Project Description"></textarea>
+        <div class="form-buttons">
+            <button onclick="createProject()">Create</button>
+            <button onclick="document.getElementById('newProjectForm').style.display = 'none'">Cancel</button>
+        </div>
+    </div>
+
         <div class="container">
             <div class="chat-box" id="chatBox"></div>
 
@@ -35,38 +70,247 @@
     <script>
         const API_URL = "https://project-navigator-gzq4.onrender.com";
 
+        // Check if user is logged in
+        function checkAuth() {
+            const token = localStorage.getItem('jwt');
+            if (!token) {
+                window.location.href = 'index.html';
+                return;
+            }
+            return token;
+        }
+
+        // Load projects when page loads
+        window.addEventListener('load', async () => {
+            await loadProjects();
+            const currentProjectId = localStorage.getItem('currentProjectId');
+            if (currentProjectId) {
+                document.getElementById('projectSelect').value = currentProjectId;
+                loadProjectDetails(currentProjectId);
+                loadChatHistory();
+            }
+        });
+
+        // Load project details including phase
+        async function loadProjectDetails(projectId) {
+            const token = checkAuth();
+            if (!token) return;
+
+            try {
+                const response = await fetch(`${API_URL}/projects/${projectId}`, {
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load project details');
+                }
+
+                const project = await response.json();
+                
+                // Update phase display
+                document.getElementById('phaseSection').style.display = 'block';
+                document.getElementById('currentPhase').textContent = project.currentPhase;
+                
+                // Update phase markers
+                document.querySelectorAll('.phase-marker').forEach(marker => {
+                    marker.classList.remove('active', 'completed');
+                    if (marker.dataset.phase === project.currentPhase) {
+                        marker.classList.add('active');
+                    } else if (project.phaseDetails[marker.dataset.phase.toLowerCase()]?.completed) {
+                        marker.classList.add('completed');
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading project details:', error);
+            }
+        }
+
+        // Load projects into dropdown
+        async function loadProjects() {
+            const token = checkAuth();
+            if (!token) return;
+
+            try {
+                const response = await fetch(`${API_URL}/projects`, {
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load projects');
+                }
+
+                const projects = await response.json();
+                const select = document.getElementById('projectSelect');
+                
+                // Clear existing options except the first one
+                while (select.options.length > 1) {
+                    select.remove(1);
+                }
+
+                // Add projects to dropdown
+                projects.forEach(project => {
+                    const option = document.createElement('option');
+                    option.value = project._id;
+                    option.textContent = project.name;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading projects:', error);
+            }
+        }
+
+        // Handle project selection change
+        document.getElementById('projectSelect').addEventListener('change', function() {
+            const projectId = this.value;
+            localStorage.setItem('currentProjectId', projectId);
+            if (projectId) {
+                loadProjectDetails(projectId);
+                loadChatHistory();
+            } else {
+                document.getElementById('chatBox').innerHTML = '';
+                document.getElementById('phaseSection').style.display = 'none';
+            }
+        });
+
+        // Show new project form
+        document.getElementById('newProjectBtn').addEventListener('click', function() {
+            document.getElementById('newProjectForm').style.display = 'block';
+        });
+
+        // Create new project
+        async function createProject() {
+            const token = checkAuth();
+            if (!token) return;
+
+            const name = document.getElementById('projectName').value.trim();
+            const description = document.getElementById('projectDescription').value.trim();
+
+            if (!name) {
+                alert('Please enter a project name');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/projects`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ name, description })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to create project');
+                }
+
+                const project = await response.json();
+                
+                // Reset and hide form
+                document.getElementById('projectName').value = '';
+                document.getElementById('projectDescription').value = '';
+                document.getElementById('newProjectForm').style.display = 'none';
+
+                // Reload projects and select the new one
+                await loadProjects();
+                document.getElementById('projectSelect').value = project._id;
+                localStorage.setItem('currentProjectId', project._id);
+                loadChatHistory();
+            } catch (error) {
+                console.error('Error creating project:', error);
+                alert('Error creating project. Please try again.');
+            }
+        }
+
+        // Load chat history when page loads
+        async function loadChatHistory() {
+            const token = checkAuth();
+            if (!token) return;
+
+            // Get the current project ID
+            const currentProjectId = localStorage.getItem('currentProjectId');
+            if (!currentProjectId) {
+                appendMessage('Please select or create a project first.', false);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/chat-history/${currentProjectId}`, {
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load chat history');
+                }
+
+                const data = await response.json();
+                const chatBox = document.getElementById('chatBox');
+                chatBox.innerHTML = ''; // Clear existing messages
+
+                // Display messages in chronological order
+                data.messages.forEach(msg => {
+                    appendMessage(msg.message, msg.isUser);
+                });
+
+                // Scroll to bottom
+                chatBox.scrollTop = chatBox.scrollHeight;
+            } catch (error) {
+                console.error('Error loading chat history:', error);
+                appendMessage('Error loading chat history. Please try refreshing the page.', false);
+            }
+        }
+
         async function sendMessage() {
             const userInput = document.getElementById('userInput');
             const message = userInput.value.trim();
+            const currentProjectId = localStorage.getItem('currentProjectId');
             if (!message) return;
+            if (!currentProjectId) {
+                appendMessage('Please select or create a project first.', false);
+                return;
+            }
 
             appendMessage(message, true);
             userInput.value = '';
             showLoadingMessage();
 
-            const response = await fetch(`${API_URL}/chat`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${localStorage.getItem('jwt')}`
-                },
-                body: JSON.stringify({ projectId: "12345", message })
-            });
+            const token = checkAuth();
+            if (!token) return;
 
-            const data = await response.json();
+            try {
+                // Send message to backend server
+                const response = await fetch(`${API_URL}/chat`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ message, projectId: currentProjectId })
+                });
 
-            hideLoadingMessage();
-            appendMessage(data.chatGptReply || "No response from AI.", false);
+                if (!response.ok) {
+                    throw new Error('Failed to send message');
+                }
 
-            saveConversation({
-                title: message.slice(0, 20),
-                messages: [
-                    { text: message, isUser: true },
-                    { text: data.chatGptReply || "No response", isUser: false }
-                ]
-            });
+                const data = await response.json();
+
+                // Hide loading message and append response from AI
+                hideLoadingMessage();
+                appendMessage(data.reply || "No response from AI.", false);
+            } catch (error) {
+                console.error('Error sending message:', error);
+                hideLoadingMessage();
+                appendMessage('Error sending message. Please try again.', false);
+            }
         }
 
+        // Event listener for sending messages when button is clicked
         document.getElementById('sendButton').addEventListener('click', sendMessage);
 
         function appendMessage(content, isUser) {
@@ -87,24 +331,41 @@
         async function uploadPDF() {
             const fileInput = document.getElementById('pdfInput');
             const file = fileInput.files[0];
-            const token = localStorage.getItem("jwt");
+            const token = checkAuth();
+            if (!token) return;
 
-            if (!file || !token) return;
+            if (!file) {
+                alert("Please select a PDF file!");
+                return;
+            }
 
+            // Show loading message
             showLoadingMessage();
 
             const formData = new FormData();
             formData.append('pdfFile', file);
 
-            const response = await fetch(`${API_URL}/upload-pdf`, {
-                method: 'POST',
-                headers: { "Authorization": `Bearer ${token}` },
-                body: formData
-            });
+            try {
+                const response = await fetch(`${API_URL}/upload-pdf`, {
+                    method: 'POST',
+                    headers: { "Authorization": `Bearer ${token}` },
+                    body: formData
+                });
 
-            const data = await response.json();
-            hideLoadingMessage();
-            appendMessage(data.chatGptReply || data.error, false);
+                if (!response.ok) {
+                    throw new Error('Failed to upload PDF');
+                }
+
+                const data = await response.json();
+
+                // Hide loading message and append PDF output to chatbox
+                hideLoadingMessage();
+                appendMessage(data.chatGptReply || data.error, false);
+            } catch (error) {
+                console.error('Error uploading PDF:', error);
+                hideLoadingMessage();
+                appendMessage('Error uploading PDF. Please try again.', false);
+            }
         }
 
         function showLoadingMessage() {
@@ -131,8 +392,10 @@
             const loadingDiv = chatBox.querySelector('.loading-message');
             if (!loadingDiv) return;
 
-            clearInterval(loadingDiv.getAttribute('data-interval-id'));
-            chatBox.removeChild(loadingDiv);
+            if (loadingDiv) {
+                clearInterval(loadingDiv.getAttribute('data-interval-id'));
+                chatBox.removeChild(loadingDiv);
+            }
         }
 
         function logout() {
