@@ -1,26 +1,28 @@
+/* General Reset & Base Styles */
 body {
-    font-family: 'Roboto', sans-serif;
-    display: flex;
     margin: 0;
     padding: 0;
-    background-color: #000;
-    color: #fff;
+    font-family: 'Roboto', 'Hiragino Sans', sans-serif;
+    background-color: #000000;
+    color: #ffffff;
+    display: flex;
     height: 100vh;
-    overflow: hidden;
 }
 
+/* Sidebar Styles */
 .sidebar {
     width: 250px;
-    background-color: #5c5c5c;
+    background-color: #5c5c5c; /* Burgundy */
     color: white;
     padding: 20px;
     overflow-y: auto;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
 }
 
 .sidebar h2 {
-    font-size: 20px;
     margin-top: 0;
-    color: #fff;
+    font-size: 1.5em;
+    color: #ffffff;
 }
 
 .sidebar ul {
@@ -29,214 +31,103 @@ body {
 }
 
 .sidebar li {
-    margin: 10px 0;
+    padding: 8px;
+    margin-bottom: 6px;
+    background-color: #fff;
+    border-radius: 6px;
     cursor: pointer;
-    color: #ffffff;
+    transition: background-color 0.2s;
+    color: #464646;
 }
 
 .sidebar li:hover {
     text-decoration: underline;
-    color: #fff;
+    color: #000;
 }
 
+/* Main Content Layout */
 .main-content {
     flex: 1;
     padding: 20px;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    
     background-color: #000
 }
 
-h1 {
-    text-align: center;
-    color: #fff;
+/* Header */
+.main-content h1 {
+    margin: 0;
+    font-size: 2em;
+    color: #ffffff;
 }
 
-.container {
-    width: 100%;
-    max-width: 1200px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.chat-box {
-    width: 100%;
-    height: 60vh;
-    overflow-y: auto;
-    border: 1px solid #ffffff;
-    border-radius: 10px;
-    padding: 15px;
-    background-color: #ffffff;
-    margin-bottom: 20px;
-    color: #fff;
-}
-
-.message {
-    max-width: 70%;
-    margin: 10px;
-    padding: 10px;
-    border-radius: 10px;
-    clear: both;
-    color: #fff
-}
-
-.message.user {
-    background-color: #2db4d6;
-    color: white;
-    align-self: flex-end;
-    margin-left: auto;
-    border-top-right-radius: 0;
-}
-
-.message.bot {
-    background-color: #222;
-    align-self: flex-start;
-    border-top-left-radius: 0;
-}
-
-.input-section {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-#userInput {
-    width: 100%;
-    max-width: 1000px;
-    padding: 10px;
-    border-radius: 10px;
-    border: 1px solid #ccc;
-    margin-bottom: 10px;
-    resize: none;
-    font-size: 16px;
-}
-
-.buttons {
-    display: flex;
-    gap: 10px;
-}
-
-.button, .choose-file-button {
-    background-color: #333;
-    color: white;
-    padding: 8px 16px;
-    border-radius: 10px;
-    cursor: pointer;
-    font-size: 14px;
-    text-align: center;
-    transition: background-color 0.3s ease;
-    border: 1px solid #555;
-}
-
-.button:hover, .choose-file-button:hover {
-    background-color: #555;
-}
-
-.logout-button {
-    margin-top: 20px;
-    padding: 10px 20px;
-    background-color: #333;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    font-size: 16px;
-    border: 1px solid #555;
-}
-
-.logout-button:hover {
-    background-color: #555;
-}
-
-pre#output {
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    width: 100%;
-    max-width: 1000px;
-    margin-top: 10px;
-    background-color: #111;
-    padding: 10px;
-    border: 1px solid #444;
-    border-radius: 10px;
-    color: #fff
-} 
-
-/* Centered layout */
-.centered {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    z-index: 1;
-    position: relative;
-    text-align: center;
-}
-
-.main-title {
-    font-size: 80px;
-    margin-bottom: 40px;
-    color: white;
-}
-
-/* Shared form styling */
-.auth-form {
-    background-color: rgba(255, 255, 255, 0.05);
-    padding: 20px;
-    border-radius: 10px;
-    margin: 10px 0;
-    width: 300px;
-    backdrop-filter: blur(10px);
-}
-
+/* Project Section */
 .project-section {
-    margin: 20px auto;
-    max-width: 800px;
     display: flex;
     gap: 10px;
-    align-items: center;
+    margin: 20px 0;
 }
 
-#projectSelect {
-    flex: 1;
-    padding: 10px;
-    font-size: 16px;
+.project-section select,
+.project-section button {
+    padding: 8px 12px;
+    font-size: 14px;
+    border-radius: 6px;
     border: 1px solid #ccc;
-    border-radius: 4px;
-    background-color: white;
 }
 
-#newProjectBtn {
-    padding: 10px 20px;
-    font-size: 16px;
-    background-color: #4CAF50;
+.project-section button {
+    background-color: #000000;
     color: white;
-    border: none;
-    border-radius: 4px;
     cursor: pointer;
+    transition: background-color 0.3s;
 }
 
-#newProjectBtn:hover {
-    background-color: #45a049;
+.project-section button:hover {
+    background-color: #a00030;
 }
 
+/* Phase Progress Section */
+.phase-section {
+    margin-bottom: 20px;
+}
+
+.phase-indicator {
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.phase-bar {
+    display: flex;
+    gap: 10px;
+}
+
+.phase-marker {
+    padding: 6px 10px;
+    border-radius: 10px;
+    background-color: #ddd;
+    color: #333;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.phase-marker.active {
+    background-color: #008031;
+    color: white;
+    font-weight: bold;
+}
+
+.phase-marker.completed {
+    background-color: #c0c0c0;
+}
+
+/* New Project Form */
 .form-container {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: white;
+    background-color: #fff;
     padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
-}
-
-.form-container h2 {
-    margin-top: 0;
+    border: 1px solid #ddd;
+    border-radius: 10px;
     margin-bottom: 20px;
 }
 
@@ -244,130 +135,219 @@ pre#output {
 .form-container textarea {
     width: 100%;
     padding: 10px;
-    margin-bottom: 15px;
+    margin-top: 8px;
+    margin-bottom: 12px;
     border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 16px;
-}
-
-.form-container textarea {
-    height: 100px;
-    resize: vertical;
+    border-radius: 6px;
+    font-size: 14px;
 }
 
 .form-buttons {
     display: flex;
     gap: 10px;
-    justify-content: flex-end;
 }
 
 .form-buttons button {
     padding: 8px 16px;
-    font-size: 14px;
     border: none;
-    border-radius: 4px;
+    border-radius: 6px;
+    background-color: #333;
+    color: white;
     cursor: pointer;
 }
 
-.form-buttons button:first-child {
-    background-color: #4CAF50;
-    color: white;
+.form-buttons button:hover {
+    background-color: #000;
 }
 
-.form-buttons button:last-child {
-    background-color: #f44336;
-    color: white;
-}
-
-.phase-section {
-    margin: 20px auto;
-    max-width: 800px;
-    padding: 20px;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.phase-indicator {
-    margin-bottom: 15px;
-    font-size: 18px;
-}
-
-.phase-label {
-    font-weight: bold;
-    margin-right: 10px;
-}
-
-.phase-value {
-    color: #4CAF50;
-    font-weight: bold;
-}
-
-.phase-progress {
-    width: 100%;
-    margin-top: 20px;
-}
-
-.phase-bar {
+/* Chat Box */
+.container {
+    flex: 1;
     display: flex;
-    justify-content: space-between;
-    position: relative;
-    margin-bottom: 20px;
+    flex-direction: column;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    overflow: hidden;
+    background-color: white;
+    width: 100%
 }
 
-.phase-bar::before {
-    content: '';
+.chat-box {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    background-color: #fefefe;
+    display: flex;
+    flex-direction:column;
+    gap: 10px;
+}
+
+/* Messages */
+.message {
+    margin: 10px 0;
+    padding: 10px 14px;
+    border-radius: 12px;
+    max-width: 70%;
+    word-wrap: break-word;
+    font-size: 14px;
+}
+
+.user {
+    background-color: #318cc0;
+    align-self: flex-end;
+    margin-left: auto;
+}
+
+.bot {
+    background-color: #38d172;
+    align-self: flex-start;
+}
+
+/* Input Section */
+.input-section {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid #ccc;
+    padding: 10px;
+}
+
+.input-section textarea {
+    resize: none;
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    min-height: 40px;
+}
+
+/* Buttons */
+.buttons {
+    margin-top: 10px;
+    display: flex;
+    gap: 10px;
+}
+
+.button {
+    padding: 8px 16px;
+    background-color: #000000;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    text-align: center;
+    transition: background-color 0.3s;
+}
+
+.button:hover {
+    background-color: #272727;
+}
+
+/* File Upload Button */
+.choose-file-button {
+    display: inline-block;
+    background-color: #000;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    text-align: center;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+.choose-file-button:hover {
+    background-color: #555;
+}
+
+/* Logout */
+.logout-button {
+    align-self: center;
+    margin-top: 20px;
+    padding: 8px 16px;
+    background-color: #ddd;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.logout-button:hover {
+    background-color: #ccc;
+}
+
+/* Output Pre */
+#output {
+    margin-top: 20px;
+    font-size: 13px;
+    white-space: pre-wrap;
+    background-color: #1c1c1c;
+    color: #fff;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #444;
+}
+#output:empty {
+    display: none;
+}
+/* Centered layout for login/signup UI */
+.content.centered {
     position: absolute;
     top: 50%;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: #e0e0e0;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
     z-index: 1;
+    padding: 20px;
+    background-color: rgba(0, 0, 0, 0.6); /* Optional background overlay for readability */
+    border-radius: 12px;
 }
 
-.phase-marker {
-    position: relative;
-    padding: 8px 15px;
-    background: white;
-    border: 2px solid #e0e0e0;
-    border-radius: 20px;
-    z-index: 2;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.phase-marker.active {
-    background: #4CAF50;
-    color: white;
-    border-color: #4CAF50;
-}
-
-.phase-marker.completed {
-    background: #8BC34A;
-    color: white;
-    border-color: #8BC34A;
-}
-
-.phase-marker:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.auth-form h2 {
-    color: white;
-}
-
+/* Style the input fields */
 .auth-form input {
     width: 100%;
-    padding: 10px;
-    margin: 8px 0;
-    border-radius: 8px;
+    padding: 12px;
+    font-size: 14px;
+    border-radius: 6px;
     border: 1px solid #ccc;
-    font-size: 16px;
+    background-color: #d3d3d3; /* Dark background for inputs */
+    color: rgb(0, 0, 0); /* text color */
+    margin-top: 8px;
+    margin-bottom: 12px;
 }
 
-.auth-form .button {
+.auth-form input:focus {
+    border-color: #2db4d6; /* Accent color on focus */
+    outline: none;
+    background-color: #ffffff; /* Slightly lighter background on focus */
+}
+
+.auth-form button {
     width: 100%;
+    padding: 10px;
+    margin-top:8px;
+    font-size: 14px;
+    background-color: #272727;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.3s;
+}
+
+.auth-form button:hover {
+    background-color: #555555; /* Darker button background on hover */
+}
+
+
+/* Video Background */
+#video-background {
+    position: absolute;  /* Allows positioning relative to the body */
+    top: 50%;  /* Centers the video vertically */
+    left: 50%;  /* Centers the video horizontally */
+    transform: translate(-50%, -50%);  /* Offsets the video by 50% of its width and height to achieve centering */
+    min-width: 100%;  /* Ensures the video always covers the full width of the viewport */
+    min-height: 100%;  /* Ensures the video always covers the full height of the viewport */
+    object-fit: cover;  /* Ensures the video maintains its aspect ratio and covers the entire viewport */
+    z-index: -1;  /* Ensures the video stays in the background */
 }
 
