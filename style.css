@@ -12,7 +12,7 @@ body {
 /* Sidebar Styles */
 .sidebar {
     width: 250px;
-    background-color: #5c5c5c; /* Burgundy */
+    background-color: rgb(12, 12, 12); /* Burgundy */
     color: white;
     padding: 20px;
     overflow-y: auto;
@@ -52,7 +52,7 @@ body {
     display: flex;
     flex-direction: column;
     
-    background-color: #000
+    background-color: #27272e
 }
 
 /* Header */
@@ -85,7 +85,7 @@ body {
 }
 
 .project-section button:hover {
-    background-color: #a00030;
+    background-color: #00a008;
 }
 
 /* Phase Progress Section */
@@ -125,6 +125,7 @@ body {
 /* New Project Form */
 .form-container {
     background-color: #fff;
+    color:black;
     padding: 20px;
     border: 1px solid #ddd;
     border-radius: 10px;
@@ -180,6 +181,7 @@ body {
     display: flex;
     flex-direction:column;
     gap: 10px;
+    scroll-behavior: smooth;
 }
 
 /* Messages */
@@ -201,7 +203,15 @@ body {
 .bot {
     background-color: #38d172;
     align-self: flex-start;
+    max-width: 50%;
+    word-wrap: break-word;
 }
+
+.message.bot.step {
+    margin-top: 6px;
+    margin-bottom: 6px;
+}
+
 
 /* Input Section */
 .input-section {
@@ -224,7 +234,7 @@ body {
 .buttons {
     margin-top: 10px;
     display: flex;
-    gap: 10px;
+    gap: 4px;
 }
 
 .button {
@@ -351,3 +361,16 @@ body {
     z-index: -1;  /* Ensures the video stays in the background */
 }
 
+/* might affect loading*/
+.blinking-cursor {
+    display: inline-block;
+    margin-left: 2px;
+    color: #fff;
+    animation: blink 1s steps(2, start) infinite;
+}
+
+@keyframes blink {
+    to {
+        visibility: hidden;
+    }
+}
