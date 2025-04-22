@@ -329,6 +329,60 @@ app.get('/chat-history/:projectId', authenticateToken, async (req, res) => {
     }
 });
 
+const { OpenAI } = require("openai");
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+app.post('/generate-gantt', authenticateToken, async (req, res) => {
+  try {
+    const { projectId } = req.body;
+    const project = await Project.findOne({ _id: projectId, userId: req.user.userId });
+    if (!project) return res.status(404).json({ error: 'Project not found' });
+
+    const prompt = `Generate a JSON array for a Gantt chart based on this project description: ${project.description}. Include task id, name, start, end, progress (0-100), and dependencies.`;
+
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4',
+      messages: [
+        { role: 'user', content: prompt }
+      ]
+    });
+
+    const json = response.choices[0].message.content.match(/```json\s*([\s\S]+?)\s*```/);
+    const ganttData = JSON.parse(json ? json[1] : response.choices[0].message.content);
+
+    res.json({ ganttData });
+  } catch (err) {
+    console.error('Gantt error:', err);
+    res.status(500).json({ error: 'Failed to generate Gantt chart' });
+  }
+});
+
+app.post('/generate-wbs', authenticateToken, async (req, res) => {
+  try {
+    const { projectId } = req.body;
+    const project = await Project.findOne({ _id: projectId, userId: req.user.userId });
+    if (!project) return res.status(404).json({ error: 'Project not found' });
+
+    const prompt = `Generate a Work Breakdown Structure (WBS) in flat JSON array format for a project with this description: ${project.description}. Use { id, parent, text } format.`;
+
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4',
+      messages: [
+        { role: 'user', content: prompt }
+      ]
+    });
+
+    const json = response.choices[0].message.content.match(/```json\s*([\s\S]+?)\s*```/);
+    const wbsData = JSON.parse(json ? json[1] : response.choices[0].message.content);
+
+    res.json({ wbsData });
+  } catch (err) {
+    console.error('WBS error:', err);
+    res.status(500).json({ error: 'Failed to generate WBS' });
+  }
+});
+
+
 // OpenAI API Endpoint (protected)
 app.post('/chat', authenticateToken, async (req, res) => {
     try {

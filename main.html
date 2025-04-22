@@ -5,6 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Main - Project Navigator</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Frappe Gantt -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/frappe-gantt/dist/frappe-gantt.css">
+    <script src="https://cdn.jsdelivr.net/npm/frappe-gantt/dist/frappe-gantt.umd.js"></script>
+
+    <!-- jsTree for WBS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jstree/dist/themes/default/style.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/jstree/dist/jstree.min.js"></script>
+
+    <!-- html2pdf.js for PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
     <div class="sidebar">
@@ -14,6 +24,25 @@
 
     <div class="main-content">
         <h1>Project Navigator</h1>
+        <div class="chart-controls">
+            <button class="button" onclick="generateGantt()">Generate Gantt Chart</button>
+            <button class="button" onclick="generateWBS()">Generate WBS</button>
+            <button class="button" onclick="exportPDF('ganttChart', 'GanttChart')">Export Gantt as PDF</button>
+            <button class="button" onclick="exportPDF('wbsChart', 'WBSChart')">Export WBS as PDF</button>
+        </div>
+        
+        <div id="ganttChart" style="margin: 20px 0;"></div>
+        <div id="wbsChart" style="margin: 20px 0;"></div>
+        <div class="chart-controls">
+            <button class="button" onclick="generateGantt()">Generate Gantt Chart</button>
+            <button class="button" onclick="generateWBS()">Generate WBS</button>
+            <button class="button" onclick="exportPDF('ganttChart', 'GanttChart')">Export Gantt as PDF</button>
+            <button class="button" onclick="exportPDF('wbsChart', 'WBSChart')">Export WBS as PDF</button>
+        </div>
+        
+        <div id="ganttChart" style="margin: 20px 0;"></div>
+        <div id="wbsChart" style="margin: 20px 0;"></div>
+                
 
     <!-- Project Selection Section -->
     <div class="project-section">
@@ -775,6 +804,50 @@ function updateProjectSelection(projectId, projectName) {
      
 
         /* renderHistoryList();*/
+        async function generateGantt() {
+    const token = localStorage.getItem("jwt");
+    const projectId = localStorage.getItem("currentProjectId");
+    if (!token || !projectId) return alert("Login and select a project first.");
+
+    const response = await fetch(`${API_URL}/generate-gantt`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ projectId })
+    });
+
+    const data = await response.json();
+    const gantt = new Gantt("#ganttChart", data.ganttData);
+}
+
+async function generateWBS() {
+    const token = localStorage.getItem("jwt");
+    const projectId = localStorage.getItem("currentProjectId");
+    if (!token || !projectId) return alert("Login and select a project first.");
+
+    const response = await fetch(`${API_URL}/generate-wbs`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ projectId })
+    });
+
+    const data = await response.json();
+
+    // Initialize jsTree with WBS data
+    $('#wbsChart').jstree('destroy'); // Reset if exists
+    $('#wbsChart').jstree({ core: { data: data.wbsData } });
+}
+
+function exportPDF(elementId, filename) {
+    const element = document.getElementById(elementId);
+    html2pdf().from(element).save(`${filename}.pdf`);
+}
+
     </script>
 </body>
 </html>

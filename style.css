@@ -369,6 +369,13 @@ body {
     animation: blink 1s steps(2, start) infinite;
 }
 
+.chart-controls {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
 @keyframes blink {
     to {
         visibility: hidden;
