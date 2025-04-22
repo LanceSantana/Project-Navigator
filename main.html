@@ -24,16 +24,21 @@
 
     <div class="main-content">
         <h1>Project Navigator</h1>
-        <div class="chart-controls">
-            <button class="button" onclick="generateGantt()">Generate Gantt Chart</button>
-            <button class="button" onclick="generateWBS()">Generate WBS</button>
-            <button class="button" onclick="exportPDF('ganttChart', 'GanttChart')">Export Gantt as PDF</button>
-            <button class="button" onclick="exportPDF('wbsChart', 'WBSChart')">Export WBS as PDF</button>
+        <!-- View Switch Buttons -->
+        <div class="view-toggle">
+            <button class="button" onclick="switchToChart('gantt')">View Gantt Chart</button>
+            <button class="button" onclick="switchToChart('wbs')">View WBS</button>
         </div>
         
-        <div id="ganttChart" style="margin: 20px 0;"></div>
-        <div id="wbsChart" style="margin: 20px 0;"></div>
-                
+        <!-- Chart View -->
+        <div id="chartView" style="display:none;">
+            <div id="chartControls">
+            <button class="button" onclick="switchToChat()">Back to Chat</button>
+            <button class="button" onclick="exportPDF('chartContainer', 'ProjectChart')">Export Chart as PDF</button>
+            </div>
+            <div id="chartContainer" style="margin-top: 20px;"></div>
+    </div>
+          
 
     <!-- Project Selection Section -->
     <div class="project-section">
@@ -416,6 +421,11 @@
                 // Hide loading message and append response from AI
                 hideLoadingMessage();
                 appendMessage(data.reply || "No response from AI.", false);
+                
+                // After appendMessage(data.reply || "No response from AI.", false);
+                if (currentChart === 'gantt') generateGantt();
+                if (currentChart === 'wbs') generateWBS();
+
             } catch (error) {
                 console.error('Error sending message:', error);
                 hideLoadingMessage();
@@ -831,6 +841,66 @@ async function generateWBS() {
 
     // Initialize jsTree with WBS data
     $('#wbsChart').jstree('destroy'); // Reset if exists
+    $('#wbsChart').jstree({ core: { data: data.wbsData } });
+}
+
+function exportPDF(elementId, filename) {
+    const element = document.getElementById(elementId);
+    html2pdf().from(element).save(`${filename}.pdf`);
+}
+
+let currentChart = ''; // "gantt" or "wbs"
+
+function switchToChart(type) {
+    document.querySelector('.container').style.display = 'none'; // chat UI
+    document.getElementById('chartView').style.display = 'block';
+    currentChart = type;
+
+    if (type === 'gantt') generateGantt();
+    else if (type === 'wbs') generateWBS();
+}
+
+function switchToChat() {
+    document.getElementById('chartView').style.display = 'none';
+    document.querySelector('.container').style.display = 'flex';
+}
+
+async function generateGantt() {
+    const token = localStorage.getItem("jwt");
+    const projectId = localStorage.getItem("currentProjectId");
+    if (!token || !projectId) return;
+
+    const response = await fetch(`${API_URL}/generate-gantt`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ projectId })
+    });
+
+    const data = await response.json();
+    document.getElementById('chartContainer').innerHTML = ''; // reset
+    new Gantt("#chartContainer", data.ganttData);
+}
+
+async function generateWBS() {
+    const token = localStorage.getItem("jwt");
+    const projectId = localStorage.getItem("currentProjectId");
+    if (!token || !projectId) return;
+
+    const response = await fetch(`${API_URL}/generate-wbs`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ projectId })
+    });
+
+    const data = await response.json();
+    document.getElementById('chartContainer').innerHTML = '<div id="wbsChart"></div>';
+    $('#wbsChart').jstree('destroy'); // clean up
     $('#wbsChart').jstree({ core: { data: data.wbsData } });
 }
 
