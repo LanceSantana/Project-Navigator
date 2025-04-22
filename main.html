@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Main - Project Navigator</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/gojs/release/go.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -21,9 +26,10 @@
             <option value="">Select a Project</option>
         </select>
         <button id="newProjectBtn">New Project</button>
-        <button id="deleteProjectBtn" style="background-color: #ff4d4d; color: white; border: none; padding: 6px 10px; border-radius: 5px;" disabled>
+        <button id="deleteProjectBtn" class="button delete-button" disabled>
             Delete Project
         </button>
+        
     </div>
 
     <!-- Project Phase Display -->
@@ -62,6 +68,7 @@
                     <div class="button" id="sendButton">Send</div>
                     <label for="pdfInput" class="button choose-file-button">Choose File(pdf)</label>
                     <input type="file" id="pdfInput" onchange="uploadPDF()" style="display: none;">
+                    <div id="skipButton" class="button" style="display: none;">Pause Generation</div>
                 </div>
             </div>
         </div>
@@ -95,6 +102,7 @@
                 document.getElementById('projectSelect').value = currentProjectId;
                 loadProjectDetails(currentProjectId);
                 loadChatHistory();
+                renderHistoryList(); // Add this line
             }
         });
 //start of delete button addition
@@ -239,6 +247,7 @@
             } else {
                 document.getElementById('chatBox').innerHTML = '';
                 document.getElementById('phaseSection').style.display = 'none';
+                document.getElementById('historyList').innerHTML = ''; // Ensure history list is also cleared
             }
         });
 
@@ -248,7 +257,7 @@
         });
 
         // Create new project
-        async function createProject() {
+        /* async function createProject() {
             const token = checkAuth();
             if (!token) return;
 
@@ -291,8 +300,57 @@
                 alert('Error creating project. Please try again.');
             }
         }
+            */
+            async function createProject() {
+    const token = checkAuth();
+    if (!token) return;
 
-        // Load chat history when page loads
+    const name = document.getElementById('projectName').value.trim();
+    const description = document.getElementById('projectDescription').value.trim();
+
+    if (!name) {
+        alert('Please enter a project name');
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_URL}/projects`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ name, description })
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to create project');
+        }
+
+        const project = await response.json();
+
+        document.getElementById('projectName').value = '';
+        document.getElementById('projectDescription').value = '';
+        document.getElementById('newProjectForm').style.display = 'none';
+
+        await loadProjects();
+        document.getElementById('projectSelect').value = project._id;
+        localStorage.setItem('currentProjectId', project._id);
+
+        // Clear any existing chat history for the newly created project
+        const historyKey = `chatHistory_${project._id}`;
+        localStorage.removeItem(historyKey);
+
+        loadProjectDetails(project._id);
+        loadChatHistory(); // This will now be empty as we just cleared it
+        renderHistoryList(); // This will also reflect the empty history
+    } catch (error) {
+        console.error('Error creating project:', error);
+        alert('Error creating project. Please try again.');
+    }
+}    
+    
+            // Load chat history when page loads
         async function loadChatHistory() {
             const token = checkAuth();
             if (!token) return;
@@ -357,8 +415,8 @@
     localStorage.setItem("chatHistories", JSON.stringify(histories));
     } */
 //was here prior
-
-        async function sendMessage() {
+/*
+async function sendMessage() {
             const userInput = document.getElementById('userInput');
             const message = userInput.value.trim();
             const currentProjectId = localStorage.getItem('currentProjectId');
@@ -402,43 +460,63 @@
                 appendMessage('Error sending message. Please try again.', false);
             }
         }
+*/
+async function sendMessage() {
+    const userInput = document.getElementById('userInput');
+    const message = userInput.value.trim();
+    const currentProjectId = localStorage.getItem('currentProjectId'); // Get current project ID
+    if (!message) return;
+    if (!currentProjectId) {
+        appendMessage('Please select or create a project first.', false);
+        return;
+    }
 
+    appendMessage(message, true);
+    userInput.value = '';
+    showLoadingMessage();
+
+    const token = checkAuth();
+    if (!token) return;
+
+    try {
+        const response = await fetch(`${API_URL}/chat`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({ message, projectId: currentProjectId }) // Send project ID
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to send message');
+        }
+
+        const data = await response.json();
+
+        hideLoadingMessage();
+        appendMessage(data.reply || "No response from AI.", false);
+
+        // Save the conversation with project context
+        saveConversation({
+            title: message.slice(0, 20), // Create a short title
+            projectId: currentProjectId, // Store the project ID with the conversation
+            messages: [
+                { text: message, isUser: true },
+                { text: data.reply || "No response", isUser: false }
+            ]
+        });
+
+    } catch (error) {
+        console.error('Error sending message:', error);
+        hideLoadingMessage();
+        appendMessage('Error sending message. Please try again.', false);
+    }
+}
         // Event listener for sending messages when button is clicked
         document.getElementById('sendButton').addEventListener('click', sendMessage);
 
-/* async function appendMessage(content, isUser) {
-    const chatBox = document.getElementById('chatBox');
 
-    if (isUser) {
-        // User message (no animation)
-        const messageDiv = document.createElement('div');
-        messageDiv.className = 'message user';
-        messageDiv.textContent = content;
-        chatBox.appendChild(messageDiv);
-        chatBox.scrollTop = chatBox.scrollHeight;
-    } else {
-        // Bot message with typing effect
-
-        // If it's a numbered list, split and animate each step separately
-        const steps = /^\s*1\.\s+/m.test(content)
-            ? content.split(/\n(?=\d+\.\s+)/)
-            : [content];
-
-        steps.forEach((step, index) => {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'message bot step';
-            chatBox.appendChild(messageDiv);
-
-            // Delay each step based on its position
-            const delayBeforeStart = index * 400;
-
-            setTimeout(() => {
-                typeText(step.trim(), messageDiv);
-            }, delayBeforeStart);
-        });
-    }
-}
-*/ 
 async function appendMessage(content, isUser) {
     const chatBox = document.getElementById('chatBox');
 
@@ -450,6 +528,9 @@ async function appendMessage(content, isUser) {
         chatBox.scrollTop = chatBox.scrollHeight;
         
     } else {
+        document.getElementById('skipButton').style.display = 'inline-block'; // Show the skip button
+
+
         const steps = /^\s*1\.\s+/m.test(content)
             ? content.split(/\n(?=\d+\.\s+)/)
             : [content];
@@ -459,39 +540,37 @@ async function appendMessage(content, isUser) {
             messageDiv.className = 'message bot step';
             chatBox.appendChild(messageDiv);
 
-            await typeText(step.trim(), messageDiv);
+            await typeText(marked.parse(step.trim()), messageDiv);
+            //await typeText(step.trim(), messageDiv);
         }
+        document.getElementById('skipButton').style.display = 'none'; // Hide when done
+        skipTyping = false;
+
     }
     scrollToBottom();
 }
 
 
-/* function typeText(text, element, speed = 20) {
-    let i = 0;
 
-    // Add a span to hold the blinking cursor
-    const cursor = document.createElement('span');
-    cursor.className = 'blinking-cursor';
-    cursor.textContent = '|';
-    element.appendChild(cursor);
+let typingTimeouts = [];
+let isTyping = false;
+let skipTyping = false;
 
-    function type() {
-        if (i < text.length) {
-            cursor.before(text.charAt(i));
-            i++;
-            element.scrollIntoView({ behavior: 'smooth', block: 'end' }); // scroll
-            setTimeout(type, speed);
-        } else {
-            cursor.remove(); // Remove cursor once done
-        }
-    }
+//let isTyping = false; // Keep track of whether typing is in progress
+//let typingTimeouts = []; // Array to store timeout IDs
+let isPaused = false;   // New variable to track pause state
+let remainingText = ''; // To store the remaining text when paused
+let currentElement = null; // To store the current element being typed into
+let typingSpeed = 20;   // Your typing speed
+// new addition
 
-    type();
-} */
-
+//6:22pm typetext
+/*
 function typeText(text, element, speed = 20) {
     return new Promise(resolve => {
         let i = 0;
+        isTyping = true;
+        skipTyping = false;
 
         const cursor = document.createElement('span');
         cursor.className = 'blinking-cursor';
@@ -499,18 +578,161 @@ function typeText(text, element, speed = 20) {
         element.appendChild(cursor);
 
         function type() {
+            if (skipTyping) {
+                // Instantly display the full remaining text
+                cursor.before(text.slice(i));
+                cursor.remove();
+                isTyping = false;
+                resolve();
+                return;
+            }
+
             if (i < text.length) {
                 cursor.before(text.charAt(i));
                 i++;
-                element.scrollIntoView({ behavior: 'smooth', block: 'end' });
-                setTimeout(type, speed);
+                const timeout = setTimeout(type, speed);
+                typingTimeouts.push(timeout);
             } else {
                 cursor.remove();
+                isTyping = false;
                 resolve();
             }
         }
 
         type();
+    });
+}
+*/
+
+/*
+function typeText(text, element, speed = 20) {
+    return new Promise(resolve => {
+        let i = 0;
+        isTyping = true;
+        skipTyping = false; // Reset the flag at the start of each typing
+
+        const cursor = document.createElement('span');
+        cursor.className = 'blinking-cursor';
+        cursor.textContent = '|';
+        element.appendChild(cursor);
+
+        function type() {
+            if (skipTyping) {
+                // Instantly display the full remaining text
+                cursor.before(text.slice(i));
+                cursor.remove();
+                isTyping = false;
+                resolve();
+                return;
+            }
+
+            if (i < text.length) {
+                cursor.before(text.charAt(i));
+                i++;
+                const timeout = setTimeout(type, speed);
+                typingTimeouts.push(timeout);
+            } else {
+                cursor.remove();
+                isTyping = false;
+                resolve();
+            }
+        }
+
+        type();
+    });
+}
+*/
+
+
+//2:19 AM typetext: still keeps numbering
+
+function typeText(html, element, speed = 50) {
+    return new Promise(resolve => {
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = html;
+
+        const nodes = Array.from(tempDiv.childNodes);
+        let currentNodeIndex = 0;
+
+        const cursor = document.createElement('span');
+        cursor.className = 'blinking-cursor';
+        cursor.textContent = '|';
+        element.appendChild(cursor);
+
+        function typeNextNode() {
+            if (skipTyping || currentNodeIndex >= nodes.length) {
+                while (currentNodeIndex < nodes.length) {
+                    element.insertBefore(nodes[currentNodeIndex], cursor);
+                    currentNodeIndex++;
+                }
+                cursor.remove();
+                resolve();
+                return;
+            }
+
+            const node = nodes[currentNodeIndex++];
+            element.insertBefore(node, cursor);
+            const timeout = setTimeout(typeNextNode, speed);
+            typingTimeouts.push(timeout);
+        }
+
+        typeNextNode();
+    });
+}
+
+//accurately animated version, 2:24AM
+/* 
+function typeText(html, element, speed = 20) {
+    return new Promise(resolve => {
+        let i = 0;
+        isTyping = true;
+        skipTyping = false;
+
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = html;
+
+        const fullText = tempDiv.textContent || tempDiv.innerText || ''; // convert to raw text
+
+        const cursor = document.createElement('span');
+        cursor.className = 'blinking-cursor';
+        cursor.textContent = '|';
+        element.appendChild(cursor);
+
+        function type() {
+            if (skipTyping) {
+                cursor.before(fullText.slice(i));
+                cursor.remove();
+                isTyping = false;
+                resolve();
+                return;
+            }
+
+            if (i < fullText.length) {
+                cursor.before(fullText.charAt(i));
+                i++;
+                const timeout = setTimeout(type, speed);
+                typingTimeouts.push(timeout);
+            } else {
+                cursor.remove();
+                isTyping = false;
+                resolve();
+            }
+        }
+
+        type();
+    });
+}
+*/
+
+// 🧠 Skip Typing Event Listener
+const skipButton = document.getElementById('skipButton');
+if (skipButton) {
+    skipButton.addEventListener('click', () => {
+        skipTyping = true;
+
+        // Clear any pending timeouts to stop the animation
+        typingTimeouts.forEach(timeout => clearTimeout(timeout));
+        typingTimeouts = [];
     });
 }
 
@@ -604,7 +826,7 @@ function typeText(text, element, speed = 20) {
             renderHistoryList();
         } */
 
-        function saveConversation(convo) {
+  /*      function saveConversation(convo) {
             const currentProjectId = localStorage.getItem('currentProjectId');
             if (!currentProjectId) return;
 
@@ -620,7 +842,27 @@ function typeText(text, element, speed = 20) {
             renderHistoryList();
 }
 
+*/
+/*function saveConversation(convo) {
+    let history = JSON.parse(localStorage.getItem('chatHistory')) || [];
+    history.unshift(convo);
+    if (history.length > 10) history.pop();
+    localStorage.setItem('chatHistory', JSON.stringify(history));
+    renderHistoryList();
+}
+    */
+//new addition
+    function saveConversation(convo) {
+    const currentProjectId = localStorage.getItem('currentProjectId');
+    if (!currentProjectId) return;
 
+    const historyKey = `chatHistory_${currentProjectId}`;
+    let history = JSON.parse(localStorage.getItem(historyKey)) || [];
+    history.unshift(convo);
+    if (history.length > 10) history.pop();
+    localStorage.setItem(historyKey, JSON.stringify(history));
+    renderHistoryList(); // This will now read from the project-specific history
+}
 
 /*        function renderHistoryList() {
             const historyList = document.getElementById('historyList');
@@ -659,6 +901,7 @@ function saveToRecentHistory(message) {
 }
 */
 
+/*
 function saveToRecentHistory(message) {
     const currentProjectId = localStorage.getItem('currentProjectId');
     if (!currentProjectId || !message) return;
@@ -692,7 +935,125 @@ function saveToRecentHistory(message) {
 
     renderHistoryList();
 }
+*/
 
+function saveToRecentHistory(message) {
+    const currentProjectId = localStorage.getItem('currentProjectId');
+    if (!currentProjectId || !message) return;
+
+    const projectName = localStorage.getItem('currentProjectName');
+    if (!projectName) return;
+
+    const key = `recentHistory_${currentProjectId}`;
+    const history = JSON.parse(localStorage.getItem(key)) || [];
+
+    if (message.length < 4) return;
+
+    const commandRegex = /^(what|how|when|who|why|give me|print|show|list|generate|summarize|create|help)\b/i;
+    if (!commandRegex.test(message)) return;
+
+    history.unshift({ message, projectId: currentProjectId, projectName });
+
+    if (history.length > 10) history.pop();
+
+    localStorage.setItem(key, JSON.stringify(history));
+
+    const allHistories = JSON.parse(localStorage.getItem('projectHistories')) || {};
+    allHistories[currentProjectId] = history;
+    localStorage.setItem('projectHistories', JSON.stringify(allHistories));
+
+    renderHistoryList();
+}
+//new renderhistorylist
+function renderHistoryList() {
+    const historyList = document.getElementById('historyList');
+    historyList.innerHTML = '';
+    const currentProjectId = localStorage.getItem('currentProjectId');
+    if (!currentProjectId) return;
+
+    const historyKey = `chatHistory_${currentProjectId}`;
+    const history = JSON.parse(localStorage.getItem(historyKey)) || [];
+    const maxLength = 30; // You can adjust this value
+
+    history.forEach(item => {
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = '#';
+        let displayText = item.title || (item.messages && item.messages[0]?.text) || 'Untitled'; // Prioritize title, then first message
+        if (displayText.length > maxLength) {
+            displayText = displayText.substring(0, maxLength) + "...";
+        }
+        a.textContent = displayText;
+        a.title = item.title || (item.messages && item.messages[0]?.text) || 'Untitled'; // Keep full text on hover
+        a.addEventListener('click', () => {
+            loadConversation(item);
+        });
+        li.appendChild(a);
+        historyList.appendChild(li);
+    });
+}
+
+/*
+function renderHistoryList() {
+    const historyList = document.getElementById('historyList');
+    historyList.innerHTML = '';
+    const currentProjectId = localStorage.getItem('currentProjectId');
+    if (!currentProjectId) return;
+
+    const historyKey = `chatHistory_${currentProjectId}`;
+    const history = JSON.parse(localStorage.getItem(historyKey)) || [];
+
+    history.forEach((item, index) => {
+        const li = document.createElement('li');
+        li.textContent = item.title || `Conversation ${index + 1}`;
+        li.onclick = () => loadConversation(item);
+        historyList.appendChild(li);
+    });
+}
+*/
+
+//old renderhistorylist()
+/* function renderHistoryList() {
+    const historyList = document.getElementById('historyList');
+    historyList.innerHTML = '';
+    const history = JSON.parse(localStorage.getItem('chatHistory')) || [];
+
+    history.forEach((item, index) => {
+        const li = document.createElement('li');
+        li.textContent = item.title || `Conversation ${index + 1}`;
+        li.onclick = () => loadConversation(item);
+        historyList.appendChild(li);
+    });
+}
+    */ 
+
+/*
+function renderHistoryList() {
+    const historyList = document.getElementById('historyList');
+    historyList.innerHTML = '';
+
+    const currentProjectId = localStorage.getItem('currentProjectId');
+    if (!currentProjectId) return;
+
+    const allHistories = JSON.parse(localStorage.getItem('projectHistories')) || {};
+    const history = allHistories[currentProjectId] || [];
+
+    history.forEach(item => {
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = '#';
+        a.textContent = item.message || 'Untitled';
+        a.title = item.message;
+        a.addEventListener('click', () => {
+            updateProjectSelection(item.projectId, item.projectName);
+            loadProjectDetails(item.projectId);
+            loadChatHistory(); // Reload the full chat history for the selected project
+        });
+        li.appendChild(a);
+        historyList.appendChild(li);
+    });
+}
+*/
 /*
 function renderHistoryList() {
     const historyList = document.getElementById('historyList');
@@ -714,12 +1075,13 @@ function renderHistoryList() {
 }
 */
 
-function renderHistoryList() {
+/* function renderHistoryList() {
     const historyList = document.getElementById('historyList');
     historyList.innerHTML = '';
 
     const currentProjectId = localStorage.getItem('currentProjectId');
     if (!currentProjectId) return;
+
 
     // Fetch history for the current project
     const allHistories = JSON.parse(localStorage.getItem('projectHistories')) || {};
@@ -743,7 +1105,39 @@ function renderHistoryList() {
         li.appendChild(a);
         historyList.appendChild(li);
     });
+
+    a.addEventListener('click', () => {
+    updateProjectSelection(item.projectId, item.projectName);
+    loadProjectDetails(item.projectId);
+    loadChatHistory();
+});
 }
+*/
+
+/*
+function renderHistoryList() {
+    const historyList = document.getElementById('historyList');
+    historyList.innerHTML = '';
+
+    const currentProjectId = localStorage.getItem('currentProjectId');
+    if (!currentProjectId) return;
+
+    const allHistories = JSON.parse(localStorage.getItem('projectHistories')) || {};
+    const history = allHistories[currentProjectId] || [];
+
+    history.forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = item.message || 'Untitled';
+        li.title = item.message;
+        li.addEventListener('click', () => {
+            updateProjectSelection(item.projectId, item.projectName);
+            loadProjectDetails(item.projectId);
+            loadChatHistory();
+        });
+        historyList.appendChild(li);
+    });
+}
+*/
 
 function loadProjectData(projectId) {
     // This function will load and display data related to the selected project.
@@ -771,7 +1165,24 @@ function updateProjectSelection(projectId, projectName) {
             convo.messages.forEach(msg => appendMessage(msg.text, msg.isUser));
         }
 
-        window.addEventListener('DOMContentLoaded', renderHistoryList);
+        //window.addEventListener('DOMContentLoaded', renderHistoryList);
+
+window.addEventListener('DOMContentLoaded', () => {
+    renderHistoryList();
+
+    // 🧠 Skip Typing Event Listener,
+    const skipButton = document.getElementById('skipButton');
+    if (skipButton) {
+        skipButton.addEventListener('click', () => {
+            skipTyping = true;
+
+            // Clear any pending timeouts to stop the animation
+            typingTimeouts.forEach(timeout => clearTimeout(timeout));
+            typingTimeouts = [];
+        });
+    }
+});
+
      
 
         /* renderHistoryList();*/
