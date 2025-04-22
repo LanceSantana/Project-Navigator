@@ -19,9 +19,6 @@
     <!-- html2pdf.js (for PDF export) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
-
-    <!-- html2pdf.js for PDF export -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
     <div class="sidebar">
@@ -318,6 +315,7 @@
                 await loadProjects();
                 document.getElementById('projectSelect').value = project._id;
                 localStorage.setItem('currentProjectId', project._id);
+                localStorage.setItem('currentProjectName', project.name);
                 loadChatHistory();
             } catch (error) {
                 console.error('Error creating project:', error);
@@ -812,58 +810,6 @@ function updateProjectSelection(projectId, projectName) {
         }
 
         window.addEventListener('DOMContentLoaded', renderHistoryList);
-     
-
-/* renderHistoryList();*/
-    async function generateGantt() {
-        if (chartLoading) return;
-        chartLoading = true;
-
-        const token = localStorage.getItem("jwt");
-        const projectId = localStorage.getItem("currentProjectId");
-        if (!token || !projectId) return alert("Login and select a project first.");
-
-        const response = await fetch(`${API_URL}/generate-gantt`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
-            },
-            body: JSON.stringify({ projectId })
-        });
-
-        const data = await response.json();
-        const gantt = new Gantt("#ganttChart", data.ganttData);
-    }
-
-async function generateWBS() {
-    if (chartLoading) return;
-        chartLoading = true;
-
-    const token = localStorage.getItem("jwt");
-    const projectId = localStorage.getItem("currentProjectId");
-    if (!token || !projectId) return alert("Login and select a project first.");
-
-    const response = await fetch(`${API_URL}/generate-wbs`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({ projectId })
-    });
-
-    const data = await response.json();
-
-    // Initialize jsTree with WBS data
-    $('#wbsChart').jstree('destroy'); // Reset if exists
-    $('#wbsChart').jstree({ core: { data: data.wbsData } });
-}
-
-function exportPDF(elementId, filename) {
-    const element = document.getElementById(elementId);
-    html2pdf().from(element).save(`${filename}.pdf`);
-}
 
 let currentChart = ''; // "gantt" or "wbs"
 
