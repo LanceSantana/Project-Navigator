@@ -5,13 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Main - Project Navigator</title>
     <link rel="stylesheet" href="style.css">
+    <!-- ✅ jQuery (MUST be before jsTree) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
     <!-- Frappe Gantt -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/frappe-gantt/dist/frappe-gantt.css">
     <script src="https://cdn.jsdelivr.net/npm/frappe-gantt/dist/frappe-gantt.umd.js"></script>
 
-    <!-- jsTree for WBS -->
+    <!-- jsTree (for WBS) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jstree/dist/themes/default/style.min.css">
     <script src="https://cdn.jsdelivr.net/npm/jstree/dist/jstree.min.js"></script>
+
+    <!-- html2pdf.js (for PDF export) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
 
     <!-- html2pdf.js for PDF export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -422,8 +429,6 @@
                 // Hide loading message and append response from AI
                 hideLoadingMessage();
                 appendMessage(data.reply || "No response from AI.", false);
-                
-                After appendMessage(data.reply || "No response from AI.", false);
 
                 setTimeout(() => {
                     if (currentChart === 'gantt') generateGantt();
