@@ -96,6 +96,7 @@
 
     <script>
         const API_URL = "https://project-navigator-gzq4.onrender.com";
+        let chartLoading = false;
 
         // Check if user is logged in
         function checkAuth() {
@@ -422,9 +423,13 @@
                 hideLoadingMessage();
                 appendMessage(data.reply || "No response from AI.", false);
                 
-                // After appendMessage(data.reply || "No response from AI.", false);
-                if (currentChart === 'gantt') generateGantt();
-                if (currentChart === 'wbs') generateWBS();
+                After appendMessage(data.reply || "No response from AI.", false);
+
+                setTimeout(() => {
+                    if (currentChart === 'gantt') generateGantt();
+                    if (currentChart === 'wbs') generateWBS();
+                }, 500); // slight delay to prevent overlap
+
 
             } catch (error) {
                 console.error('Error sending message:', error);
@@ -804,26 +809,32 @@ function updateProjectSelection(projectId, projectName) {
         window.addEventListener('DOMContentLoaded', renderHistoryList);
      
 
-        /* renderHistoryList();*/
-        async function generateGantt() {
-    const token = localStorage.getItem("jwt");
-    const projectId = localStorage.getItem("currentProjectId");
-    if (!token || !projectId) return alert("Login and select a project first.");
+/* renderHistoryList();*/
+    async function generateGantt() {
+        if (chartLoading) return;
+        chartLoading = true;
 
-    const response = await fetch(`${API_URL}/generate-gantt`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({ projectId })
-    });
+        const token = localStorage.getItem("jwt");
+        const projectId = localStorage.getItem("currentProjectId");
+        if (!token || !projectId) return alert("Login and select a project first.");
 
-    const data = await response.json();
-    const gantt = new Gantt("#ganttChart", data.ganttData);
-}
+        const response = await fetch(`${API_URL}/generate-gantt`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({ projectId })
+        });
+
+        const data = await response.json();
+        const gantt = new Gantt("#ganttChart", data.ganttData);
+    }
 
 async function generateWBS() {
+    if (chartLoading) return;
+        chartLoading = true;
+
     const token = localStorage.getItem("jwt");
     const projectId = localStorage.getItem("currentProjectId");
     if (!token || !projectId) return alert("Login and select a project first.");
