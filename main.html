@@ -155,5 +155,51 @@
     window.switchToChat = switchToChat;
     window.exportPDF = exportPDF;
   </script>
+
+<script>
+    async function createProject() {
+      const token = localStorage.getItem("jwt");
+      if (!token) return;
+  
+      const name = document.getElementById("projectName").value.trim();
+      const description = document.getElementById("projectDescription").value.trim();
+  
+      if (!name) {
+        showSnackbar("Please enter a project name");
+        return;
+      }
+  
+      try {
+        const response = await fetch("https://project-navigator-gzq4.onrender.com/projects", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({ name, description })
+        });
+  
+        if (!response.ok) throw new Error("Failed to create project");
+  
+        const project = await response.json();
+  
+        document.getElementById("projectName").value = '';
+        document.getElementById("projectDescription").value = '';
+        document.getElementById("newProjectForm").style.display = "none";
+  
+        await loadProjects();
+        document.getElementById("projectSelect").value = project._id;
+        localStorage.setItem("currentProjectId", project._id);
+  
+        loadChatHistory();
+      } catch (err) {
+        console.error(err);
+        showSnackbar("Error creating project. Please try again.");
+      }
+    }
+  </script>
+  
+
+
 </body>
 </html>

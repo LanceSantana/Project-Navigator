@@ -120,4 +120,7 @@ export function showSnackbar(message) {
   snackbar.textContent = message;
   snackbar.style.opacity = 1;
   setTimeout(() => snackbar.style.opacity = 0, 3000);
+
+  
+
 }
