@@ -94,8 +94,91 @@
     window.switchToChart = switchToChart;
     window.switchToChat = switchToChat;
     window.exportPDF = exportPDF;
-  </script>
 
-  <!-- Include the rest of your application logic scripts below this comment as needed -->
+    document.getElementById('projectSelect').addEventListener('change', function () {
+      const projectId = this.value;
+      localStorage.setItem('currentProjectId', projectId);
+      if (projectId) {
+        loadChatHistory();
+        if (typeof loadProjectDetails === 'function') loadProjectDetails(projectId);
+      }
+    });
+
+    document.getElementById('sendButton').addEventListener('click', async () => {
+      const input = document.getElementById('userInput');
+      const message = input.value.trim();
+      const chatBox = document.getElementById('chatBox');
+      const token = localStorage.getItem('jwt');
+      const projectId = localStorage.getItem('currentProjectId');
+      if (!message || !token || !projectId) return;
+      input.value = '';
+
+      const userMsg = document.createElement('div');
+      userMsg.className = 'message user';
+      userMsg.textContent = message;
+      chatBox.appendChild(userMsg);
+
+      const response = await fetch(`https://project-navigator-gzq4.onrender.com/chat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ message, projectId })
+      });
+
+      const data = await response.json();
+      const botMsg = document.createElement('div');
+      botMsg.className = 'message bot';
+      botMsg.textContent = data.reply || 'No response';
+      chatBox.appendChild(botMsg);
+
+      if (window.currentChart === 'gantt') window.generateGantt?.();
+      if (window.currentChart === 'wbs') window.generateWBS?.();
+    });
+
+    async function loadProjects() {
+      const token = localStorage.getItem('jwt');
+      if (!token) return;
+
+      const response = await fetch('https://project-navigator-gzq4.onrender.com/projects', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      const projects = await response.json();
+      const select = document.getElementById('projectSelect');
+      select.innerHTML = '<option value="">Select a Project</option>';
+
+      projects.forEach(project => {
+        const option = document.createElement('option');
+        option.value = project._id;
+        option.textContent = project.name;
+        select.appendChild(option);
+      });
+    }
+
+    async function loadChatHistory() {
+      const token = localStorage.getItem('jwt');
+      const projectId = localStorage.getItem('currentProjectId');
+      if (!token || !projectId) return;
+
+      const response = await fetch(`https://project-navigator-gzq4.onrender.com/chat-history/${projectId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      const { messages } = await response.json();
+      const chatBox = document.getElementById('chatBox');
+      chatBox.innerHTML = '';
+
+      messages.forEach(msg => {
+        const div = document.createElement('div');
+        div.className = `message ${msg.isUser ? 'user' : 'bot'}`;
+        div.textContent = msg.message;
+        chatBox.appendChild(div);
+      });
+    }
+
+    window.addEventListener('load', loadProjects);
+  </script>
 </body>
 </html>
