@@ -14,6 +14,21 @@
   <script src="https://cdn.jsdelivr.net/npm/jstree/dist/jstree.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
+
+<script type="module">
+  import {
+    switchToChart,
+    switchToChat,
+    exportPDF,
+    showSnackbar
+  } from './chartUtils.js';
+
+  window.switchToChart = switchToChart;
+  window.switchToChat = switchToChat;
+  window.exportPDF = exportPDF;
+  window.showSnackbar = showSnackbar;
+</script>
+
 <body>
   <div class="sidebar">
     <h2>Recent History</h2>
@@ -240,35 +255,36 @@
     async function uploadPDF() {
       const token = localStorage.getItem("jwt");
       const projectId = localStorage.getItem("currentProjectId");
-      const input = document.getElementById("pdfInput");
+      const fileInput = document.getElementById("pdfInput");
+      const file = fileInput.files[0];
 
-      if (!token || !projectId || !input.files.length) {
-        showSnackbar("Missing file, project, or login.");
+      if (!token || !projectId || !file) {
+        showSnackbar("Missing login, project, or file.");
         return;
       }
 
       const formData = new FormData();
-      formData.append("pdf", input.files[0]);
+      formData.append("file", file);
       formData.append("projectId", projectId);
 
       try {
         const response = await fetch("https://project-navigator-gzq4.onrender.com/upload-pdf", {
           method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`
+          },
           body: formData
         });
 
         if (!response.ok) throw new Error("Upload failed");
-
-        showSnackbar("PDF uploaded and processed!");
-        loadChatHistory(); // refresh with new assistant reply
+        showSnackbar("PDF uploaded and parsed.");
+        loadChatHistory();
       } catch (err) {
         console.error(err);
         showSnackbar("Error uploading PDF.");
       }
-  }
-  </script>
-    
+    }
+</script>
   
   <script>
     document.getElementById('deleteProjectBtn').addEventListener('click', async () => {

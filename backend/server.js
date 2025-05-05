@@ -5,6 +5,8 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage() });
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI)
@@ -524,5 +526,63 @@ app.get('/test-db', async (req, res) => {
         });
     }
 });
+
+app.delete('/projects/:id', authenticateToken, async (req, res) => { //delete project endpoint
+    const projectId = req.params.id;
+    const userId = req.user.userId;
+  
+    try {
+      const result = await Project.deleteOne({ _id: projectId, userId });
+  
+      if (result.deletedCount === 0) {
+        return res.status(404).json({ message: "Project not found or not authorized." });
+      }
+  
+      // optionally, delete associated chat history
+      await ChatMessage.deleteMany({ projectId });
+  
+      res.json({ message: "Project deleted successfully." });
+    } catch (error) {
+      console.error("Error deleting project:", error);
+      res.status(500).json({ message: "Internal server error." });
+    }
+});
+  
+const pdfParse = require('pdf-parse');
+
+app.post('/upload-pdf', authenticateToken, upload.single('file'), async (req, res) => { //upload pdf endpoint
+  try {
+    const { projectId } = req.body;
+    const file = req.file;
+
+    if (!file || !projectId) {
+      return res.status(400).json({ error: 'Missing file or projectId' });
+    }
+
+    // Verify ownership
+    const project = await Project.findOne({ _id: projectId, userId: req.user.userId });
+    if (!project) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
+
+    // Parse PDF text
+    const parsed = await pdfParse(file.buffer);
+    const extractedText = parsed.text.trim();
+
+    await ChatMessage.create({
+      userId: req.user.userId,
+      projectId,
+      message: `PDF Uploaded:\n${extractedText.slice(0, 1000)}${extractedText.length > 1000 ? '...' : ''}`,
+      isUser: true
+    });
+
+    res.json({ message: 'PDF uploaded and content parsed into chat history.' });
+
+  } catch (err) {
+    console.error('Error uploading/parsing PDF:', err);
+    res.status(500).json({ error: 'Failed to parse PDF' });
+  }
+});
+
 
 app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
