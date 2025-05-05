@@ -326,7 +326,23 @@
       const projectId = localStorage.getItem("currentProjectId");
       const message = document.getElementById("userInput").value.trim();
       if (!token || !projectId || !message) return;
-  
+
+      // Add user message to chat immediately
+      const chatBox = document.getElementById("chatBox");
+      const userDiv = document.createElement("div");
+      userDiv.className = "message user";
+      userDiv.textContent = message;
+      chatBox.appendChild(userDiv);
+
+      // Add placeholder bot response ("Loading...") right away
+      const botDiv = document.createElement("div");
+      botDiv.className = "message bot";
+      botDiv.textContent = "Loading...";
+      chatBox.appendChild(botDiv);
+
+      document.getElementById("userInput").value = '';
+      chatBox.scrollTop = chatBox.scrollHeight;
+
       try {
         const response = await fetch("https://project-navigator-gzq4.onrender.com/chat", {
           method: "POST",
@@ -336,17 +352,18 @@
           },
           body: JSON.stringify({ projectId, message })
         });
-  
+
         if (!response.ok) throw new Error("Failed to send message");
-  
+
         const data = await response.json();
-        document.getElementById("userInput").value = '';
-        loadChatHistory();
+        botDiv.textContent = data.reply; // Replace "Loading..." with actual response
       } catch (err) {
         console.error(err);
+        botDiv.textContent = "Error: Failed to get response.";
         showSnackbar("Error sending message. Please try again.");
       }
     }
+
   
     document.getElementById('projectSelect').addEventListener('change', () => {
       const projectId = document.getElementById('projectSelect').value;
