@@ -205,39 +205,138 @@
         showSnackbar("Error creating project. Please try again.");
       }
     }
-  </script>
 
-  
+    async function deleteProject() {
+      const projectId = document.getElementById("projectSelect").value;
+      if (!projectId) return;
+
+      const confirmDelete = confirm("Are you sure you want to delete this project?");
+      if (!confirmDelete) return;
+
+      try {
+        const response = await fetch(`https://project-navigator-gzq4.onrender.com/projects/${projectId}`, {
+          method: "DELETE",
+          headers: {
+            "Authorization": `Bearer ${localStorage.getItem("jwt")}`
+          }
+        });
+
+        if (response.ok) {
+          showSnackbar("Project deleted successfully.");
+          await loadProjects();
+          localStorage.removeItem("currentProjectId");
+          document.getElementById("chatBox").innerHTML = '';
+          document.getElementById("projectSelect").value = '';
+          document.getElementById("deleteProjectBtn").disabled = true;
+        } else {
+          showSnackbar("Failed to delete project.");
+        }
+      } catch (err) {
+        console.error(err);
+        showSnackbar("Error deleting project. Please try again.");
+      }
+    }
+
+    async function uploadPDF() {
+      const token = localStorage.getItem("jwt");
+      const projectId = localStorage.getItem("currentProjectId");
+      const input = document.getElementById("pdfInput");
+
+      if (!token || !projectId || !input.files.length) {
+        showSnackbar("Missing file, project, or login.");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("pdf", input.files[0]);
+      formData.append("projectId", projectId);
+
+      try {
+        const response = await fetch("https://project-navigator-gzq4.onrender.com/upload-pdf", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData
+        });
+
+        if (!response.ok) throw new Error("Upload failed");
+
+        showSnackbar("PDF uploaded and processed!");
+        loadChatHistory(); // refresh with new assistant reply
+      } catch (err) {
+        console.error(err);
+        showSnackbar("Error uploading PDF.");
+      }
+  }
+  </script>
+    
   
   <script>
     document.getElementById('deleteProjectBtn').addEventListener('click', async () => {
-    const projectId = document.getElementById('projectSelect').value;
-    if (!projectId) return;
-
-    const confirmDelete = confirm('Are you sure you want to delete this project?');
-    if (!confirmDelete) return;
-
-    try {
-      const response = await fetch(`https://project-navigator-gzq4.onrender.com/projects/${projectId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+      const projectId = document.getElementById('projectSelect').value;
+      if (!projectId) return;
+  
+      const confirmDelete = confirm('Are you sure you want to delete this project?');
+      if (!confirmDelete) return;
+  
+      try {
+        const response = await fetch(`https://project-navigator-gzq4.onrender.com/projects/${projectId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+          }
+        });
+  
+        if (response.ok) {
+          showSnackbar('Project deleted successfully.');
+          await loadProjects();
+          localStorage.removeItem("currentProjectId");
+          document.getElementById("chatBox").innerHTML = '';
+          document.getElementById("projectSelect").value = '';
+          document.getElementById("deleteProjectBtn").disabled = true;
+        } else {
+          showSnackbar('Failed to delete project.');
         }
+      } catch (error) {
+        console.error('Error deleting project:', error);
+        showSnackbar('An error occurred while deleting the project.');
+      }
     });
-
-    if (response.ok) {
-      showSnackbar('Project deleted successfully.');
-      // Refresh project list or perform necessary UI updates
-    } else {
-      showSnackbar('Failed to delete project.');
+  
+    document.getElementById("sendButton").addEventListener("click", sendMessage);
+    document.getElementById("pdfInput").addEventListener("change", uploadPDF);
+  
+    async function sendMessage() {
+      const token = localStorage.getItem("jwt");
+      const projectId = localStorage.getItem("currentProjectId");
+      const message = document.getElementById("userInput").value.trim();
+      if (!token || !projectId || !message) return;
+  
+      try {
+        const response = await fetch("https://project-navigator-gzq4.onrender.com/chat", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({ projectId, message })
+        });
+  
+        if (!response.ok) throw new Error("Failed to send message");
+  
+        const data = await response.json();
+        document.getElementById("userInput").value = '';
+        loadChatHistory();
+      } catch (err) {
+        console.error(err);
+        showSnackbar("Error sending message. Please try again.");
+      }
     }
-  } catch (error) {
-    console.error('Error deleting project:', error);
-    showSnackbar('An error occurred while deleting the project.');
-  }
-  });
+  
+    document.getElementById('projectSelect').addEventListener('change', () => {
+      const projectId = document.getElementById('projectSelect').value;
+      document.getElementById('deleteProjectBtn').disabled = !projectId;
+    });
   </script>
-
-
-</body>
-</html>
+  </body>
+  </html>
+  
