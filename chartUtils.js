@@ -8,7 +8,12 @@ export function switchToChart(type) {
   document.getElementById('chartView').style.display = 'block';
   currentChart = type;
 
-  if (type === 'gantt') generateGantt();
+  if (type === 'gantt') {
+    generateGantt();
+    // Add event listener for project selection changes
+    const projectSelect = document.getElementById('projectSelect');
+    projectSelect.addEventListener('change', handleProjectChange);
+  }
   else if (type === 'wbs') generateWBS();
 }
 
@@ -16,6 +21,24 @@ export function switchToChat() {
   document.getElementById('chartView').style.display = 'none';
   document.querySelector('.container').style.display = 'flex';
   currentChart = '';
+  
+  // Remove event listener when switching back to chat
+  const projectSelect = document.getElementById('projectSelect');
+  projectSelect.removeEventListener('change', handleProjectChange);
+}
+
+// Add new function to handle project changes
+function handleProjectChange() {
+  if (currentChart === 'gantt') {
+    const viewMode = document.getElementById('viewMode')?.value || 'Month';
+    const phaseFilter = document.getElementById('phaseFilter')?.value || '';
+    const sprintFilter = document.getElementById('sprintFilter')?.value || '';
+    
+    generateGantt(viewMode, {
+      phase: phaseFilter,
+      sprint: sprintFilter
+    });
+  }
 }
 
 export async function generateGantt(viewMode = 'Month', filters = {}) {
