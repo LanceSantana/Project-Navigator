@@ -491,19 +491,21 @@ app.post('/chat', authenticateToken, async (req, res) => {
             ${JSON.stringify(project.documents.filter(d => d.phase === project.currentPhase), null, 2)}
         `;
 
+        // --- SYSTEM PROMPT UPGRADE ---
+        const systemPrompt = `You are a project management assistant that understands project phases and workflows. 
+You are currently in the ${project.currentPhase} phase of the project.
+Your responses should be contextual to the current phase and project status.
+You can suggest phase-specific actions, track progress, and provide relevant insights.
+Here is the current project context: ${projectContext}
+
+If the user asks for a new task, always reply with an UPDATE_PROJECT: block containing the new task, with your best guess for phase and due date. If the user is vague, infer reasonable values.`;
+
         const response = await axios.post(
             'https://api.openai.com/v1/chat/completions',
             {
                 model: 'gpt-4',
                 messages: [
-                    { 
-                        role: 'system', 
-                        content: `You are a project management assistant that understands project phases and workflows. 
-                        You are currently in the ${project.currentPhase} phase of the project.
-                        Your responses should be contextual to the current phase and project status.
-                        You can suggest phase-specific actions, track progress, and provide relevant insights.
-                        Here is the current project context: ${projectContext}`
-                    },
+                    { role: 'system', content: systemPrompt },
                     { role: 'user', content: message }
                 ]
             },
@@ -515,7 +517,7 @@ app.post('/chat', authenticateToken, async (req, res) => {
             }
         );
 
-        const aiResponse = response.data.choices[0].message.content;
+        let aiResponse = response.data.choices[0].message.content;
         
         // Store AI's response
         await ChatMessage.create({
@@ -525,16 +527,106 @@ app.post('/chat', authenticateToken, async (req, res) => {
             isUser: false
         });
 
-        // Check if the AI response contains project updates
+        // --- FLEXIBLE TASK EXTRACTION LOGIC ---
+        let updateBlock = null;
         if (aiResponse.includes('UPDATE_PROJECT:')) {
-            const updates = JSON.parse(aiResponse.split('UPDATE_PROJECT:')[1]);
+            try {
+                updateBlock = JSON.parse(aiResponse.split('UPDATE_PROJECT:')[1]);
+            } catch (e) {
+                // fallback to next step
+            }
+        }
+
+        // Try to extract task info from plain text if no JSON block
+        if (!updateBlock) {
+            // Example: "Add a task 'Kickoff' to the Planning phase, due 2024-06-10."
+            const taskMatch = aiResponse.match(/add (?:a )?task ['"]?(.+?)['"]? to the ([A-Za-z]+) phase, due ([0-9]{4}-[0-9]{2}-[0-9]{2})/i);
+            if (taskMatch) {
+                const [_, title, phase, dueDate] = taskMatch;
+                updateBlock = {
+                    tasks: [
+                        ...project.tasks,
+                        {
+                            title,
+                            phase,
+                            dueDate: new Date(dueDate),
+                            status: 'To Do'
+                        }
+                    ]
+                };
+            }
+        }
+
+        // Add more flexible patterns if needed
+        // e.g., "Create a Planning task called Kickoff for 2024-06-10"
+        if (!updateBlock) {
+            const altMatch = aiResponse.match(/create (?:a )?([A-Za-z]+) task called ['"]?(.+?)['"]? for ([0-9]{4}-[0-9]{2}-[0-9]{2})/i);
+            if (altMatch) {
+                const [_, phase, title, dueDate] = altMatch;
+                updateBlock = {
+                    tasks: [
+                        ...project.tasks,
+                        {
+                            title,
+                            phase,
+                            dueDate: new Date(dueDate),
+                            status: 'To Do'
+                        }
+                    ]
+                };
+            }
+        }
+
+        // --- NEW: If still no updateBlock, prompt ChatGPT again to extract a task ---
+        if (!updateBlock) {
+            const extractPrompt = `Extract a single new task from the following user request. Reply ONLY with a JSON object in the format: { "title": ..., "phase": ..., "dueDate": ... }. Infer reasonable values for missing fields. User request: "${message}"`;
+            const extractResponse = await axios.post(
+                'https://api.openai.com/v1/chat/completions',
+                {
+                    model: 'gpt-4',
+                    messages: [
+                        { role: 'system', content: 'You are a helpful assistant.' },
+                        { role: 'user', content: extractPrompt }
+                    ]
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+                    }
+                }
+            );
+            try {
+                const taskObj = JSON.parse(extractResponse.data.choices[0].message.content);
+                if (taskObj && taskObj.title && taskObj.phase && taskObj.dueDate) {
+                    updateBlock = {
+                        tasks: [
+                            ...project.tasks,
+                            {
+                                title: taskObj.title,
+                                phase: taskObj.phase,
+                                dueDate: new Date(taskObj.dueDate),
+                                status: 'To Do'
+                            }
+                        ]
+                    };
+                    // Optionally, append a note to the AI response
+                    aiResponse += `\n\n(Task '${taskObj.title}' added to phase '${taskObj.phase}' for ${taskObj.dueDate})`;
+                }
+            } catch (e) {
+                // If parsing fails, do nothing
+            }
+        }
+
+        // If we found a new task, update the project
+        if (updateBlock && updateBlock.tasks) {
             await Project.findOneAndUpdate(
                 { _id: projectId },
-                { $set: updates }
+                { $set: { tasks: updateBlock.tasks } }
             );
         }
 
-        // Check if the AI response suggests phase transition
+        // --- PHASE TRANSITION LOGIC (unchanged) ---
         if (aiResponse.includes('TRANSITION_PHASE:')) {
             const newPhase = aiResponse.split('TRANSITION_PHASE:')[1].trim();
             if (['Planning', 'Execution', 'Monitoring', 'Closure'].includes(newPhase)) {
