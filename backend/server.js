@@ -531,6 +531,7 @@ If the user asks for a new task, always reply with an UPDATE_PROJECT: block cont
         if (aiResponse.includes('UPDATE_PROJECT:')) {
             // Try to extract the new tasks for a friendly confirmation
             let friendlyMsg = '';
+            let newTasks = [];
             try {
                 // Try to parse the block for both 'tasks' and 'newTasks' keys
                 let updateJson = null;
@@ -538,17 +539,21 @@ If the user asks for a new task, always reply with an UPDATE_PROJECT: block cont
                 if (match) {
                     updateJson = JSON.parse(match[1]);
                 }
-                let taskList = [];
                 if (updateJson) {
                     if (Array.isArray(updateJson.newTasks)) {
-                        taskList = updateJson.newTasks;
+                        newTasks = updateJson.newTasks;
                     } else if (Array.isArray(updateJson.tasks)) {
-                        taskList = updateJson.tasks;
+                        newTasks = updateJson.tasks;
                     }
                 }
-                if (taskList.length > 0) {
-                    const taskNames = taskList.map(t => t.name || t.title).join(', ');
+                if (newTasks.length > 0) {
+                    const taskNames = newTasks.map(t => t.name || t.title).join(', ');
                     friendlyMsg = `\n\nThe following tasks have been added to your project: ${taskNames}.`;
+                    // Actually append the new tasks to the project in MongoDB
+                    await Project.findOneAndUpdate(
+                        { _id: projectId },
+                        { $push: { tasks: { $each: newTasks } } }
+                    );
                 }
             } catch (e) {
                 // fallback: generic confirmation
