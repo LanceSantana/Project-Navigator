@@ -527,103 +527,34 @@ If the user asks for a new task, always reply with an UPDATE_PROJECT: block cont
             isUser: false
         });
 
-        // --- FLEXIBLE TASK EXTRACTION LOGIC ---
-        let updateBlock = null;
+        // Remove UPDATE_PROJECT block from the AI response before sending to the user
         if (aiResponse.includes('UPDATE_PROJECT:')) {
+            // Try to extract the new tasks for a friendly confirmation
+            let friendlyMsg = '';
             try {
-                updateBlock = JSON.parse(aiResponse.split('UPDATE_PROJECT:')[1]);
-            } catch (e) {
-                // fallback to next step
-            }
-        }
-
-        // Try to extract task info from plain text if no JSON block
-        if (!updateBlock) {
-            // Example: "Add a task 'Kickoff' to the Planning phase, due 2024-06-10."
-            const taskMatch = aiResponse.match(/add (?:a )?task ['"]?(.+?)['"]? to the ([A-Za-z]+) phase, due ([0-9]{4}-[0-9]{2}-[0-9]{2})/i);
-            if (taskMatch) {
-                const [_, title, phase, dueDate] = taskMatch;
-                updateBlock = {
-                    tasks: [
-                        ...project.tasks,
-                        {
-                            title,
-                            phase,
-                            dueDate: new Date(dueDate),
-                            status: 'To Do'
-                        }
-                    ]
-                };
-            }
-        }
-
-        // Add more flexible patterns if needed
-        // e.g., "Create a Planning task called Kickoff for 2024-06-10"
-        if (!updateBlock) {
-            const altMatch = aiResponse.match(/create (?:a )?([A-Za-z]+) task called ['"]?(.+?)['"]? for ([0-9]{4}-[0-9]{2}-[0-9]{2})/i);
-            if (altMatch) {
-                const [_, phase, title, dueDate] = altMatch;
-                updateBlock = {
-                    tasks: [
-                        ...project.tasks,
-                        {
-                            title,
-                            phase,
-                            dueDate: new Date(dueDate),
-                            status: 'To Do'
-                        }
-                    ]
-                };
-            }
-        }
-
-        // --- NEW: If still no updateBlock, prompt ChatGPT again to extract a task ---
-        if (!updateBlock) {
-            const extractPrompt = `Extract a single new task from the following user request. Reply ONLY with a JSON object in the format: { "title": ..., "phase": ..., "dueDate": ... }. Infer reasonable values for missing fields. User request: "${message}"`;
-            const extractResponse = await axios.post(
-                'https://api.openai.com/v1/chat/completions',
-                {
-                    model: 'gpt-4',
-                    messages: [
-                        { role: 'system', content: 'You are a helpful assistant.' },
-                        { role: 'user', content: extractPrompt }
-                    ]
-                },
-                {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+                // Try to parse the block for both 'tasks' and 'newTasks' keys
+                let updateJson = null;
+                const match = aiResponse.match(/UPDATE_PROJECT:\s*({[\s\S]+})/);
+                if (match) {
+                    updateJson = JSON.parse(match[1]);
+                }
+                let taskList = [];
+                if (updateJson) {
+                    if (Array.isArray(updateJson.newTasks)) {
+                        taskList = updateJson.newTasks;
+                    } else if (Array.isArray(updateJson.tasks)) {
+                        taskList = updateJson.tasks;
                     }
                 }
-            );
-            try {
-                const taskObj = JSON.parse(extractResponse.data.choices[0].message.content);
-                if (taskObj && taskObj.title && taskObj.phase && taskObj.dueDate) {
-                    updateBlock = {
-                        tasks: [
-                            ...project.tasks,
-                            {
-                                title: taskObj.title,
-                                phase: taskObj.phase,
-                                dueDate: new Date(taskObj.dueDate),
-                                status: 'To Do'
-                            }
-                        ]
-                    };
-                    // Optionally, append a note to the AI response
-                    aiResponse += `\n\n(Task '${taskObj.title}' added to phase '${taskObj.phase}' for ${taskObj.dueDate})`;
+                if (taskList.length > 0) {
+                    const taskNames = taskList.map(t => t.name || t.title).join(', ');
+                    friendlyMsg = `\n\nThe following tasks have been added to your project: ${taskNames}.`;
                 }
             } catch (e) {
-                // If parsing fails, do nothing
+                // fallback: generic confirmation
+                friendlyMsg = '\n\nYour tasks have been added to the project.';
             }
-        }
-
-        // If we found a new task, update the project
-        if (updateBlock && updateBlock.tasks) {
-            await Project.findOneAndUpdate(
-                { _id: projectId },
-                { $set: { tasks: updateBlock.tasks } }
-            );
+            aiResponse = aiResponse.split('UPDATE_PROJECT:')[0].trim() + friendlyMsg;
         }
 
         // --- PHASE TRANSITION LOGIC (unchanged) ---
