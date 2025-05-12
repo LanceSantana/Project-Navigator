@@ -63,9 +63,10 @@ export async function generateGantt(viewMode = 'Month', filters = {}) {
   });
 
   const data = await response.json();
-  document.getElementById('chartContainer').innerHTML = '';
-  
-  // Create filter controls
+  const chartContainer = document.getElementById('chartContainer');
+  chartContainer.innerHTML = '';
+
+  // Create a separate div for filters
   const filterControls = document.createElement('div');
   filterControls.className = 'gantt-filters';
   filterControls.innerHTML = `
@@ -87,10 +88,25 @@ export async function generateGantt(viewMode = 'Month', filters = {}) {
       <option value="next">Next Sprint</option>
     </select>
   `;
-  document.getElementById('chartContainer').appendChild(filterControls);
+  chartContainer.appendChild(filterControls);
 
-  // Initialize Gantt chart with custom options
-  const gantt = new Gantt("#chartContainer", data.ganttData, {
+  // Show a message if there are no tasks
+  if (!data.ganttData || data.ganttData.length === 0) {
+    const msg = document.createElement('div');
+    msg.style.color = 'white';
+    msg.style.padding = '20px';
+    msg.textContent = 'No tasks found for this project. Please add tasks to see the Gantt chart.';
+    chartContainer.appendChild(msg);
+    return;
+  }
+
+  // Create a separate div for the Gantt chart itself
+  const ganttDiv = document.createElement('div');
+  ganttDiv.id = 'ganttChart';
+  chartContainer.appendChild(ganttDiv);
+
+  // Initialize Gantt chart in the new div
+  const gantt = new Gantt("#ganttChart", data.ganttData, {
     header_height: 50,
     column_width: 30,
     step: 24,
