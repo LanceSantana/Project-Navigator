@@ -18,7 +18,7 @@ export function switchToChat() {
   currentChart = '';
 }
 
-export async function generateGantt() {
+export async function generateGantt(viewMode = 'Month', filters = {}) {
   const token = localStorage.getItem("jwt");
   const projectId = localStorage.getItem("currentProjectId");
 
@@ -33,13 +33,75 @@ export async function generateGantt() {
     },
     body: JSON.stringify({
       projectId,
-      dateRange: { from: -30, to: 30 } // ask backend to filter tasks +/- 30 days
+      dateRange: { from: -30, to: 30 },
+      viewMode,
+      filters
     })
   });
 
   const data = await response.json();
   document.getElementById('chartContainer').innerHTML = '';
-  new Gantt("#chartContainer", data.ganttData);
+  
+  // Create filter controls
+  const filterControls = document.createElement('div');
+  filterControls.className = 'gantt-filters';
+  filterControls.innerHTML = `
+    <select id="viewMode" onchange="updateGanttView()">
+      <option value="Month" ${viewMode === 'Month' ? 'selected' : ''}>Monthly View</option>
+      <option value="Week" ${viewMode === 'Week' ? 'selected' : ''}>Weekly View</option>
+      <option value="Day" ${viewMode === 'Day' ? 'selected' : ''}>Daily View</option>
+    </select>
+    <select id="phaseFilter" onchange="updateGanttView()">
+      <option value="">All Phases</option>
+      <option value="Planning">Planning</option>
+      <option value="Execution">Execution</option>
+      <option value="Monitoring">Monitoring</option>
+      <option value="Closure">Closure</option>
+    </select>
+    <select id="sprintFilter" onchange="updateGanttView()">
+      <option value="">All Sprints</option>
+      <option value="current">Current Sprint</option>
+      <option value="next">Next Sprint</option>
+    </select>
+  `;
+  document.getElementById('chartContainer').appendChild(filterControls);
+
+  // Initialize Gantt chart with custom options
+  const gantt = new Gantt("#chartContainer", data.ganttData, {
+    header_height: 50,
+    column_width: 30,
+    step: 24,
+    view_mode: viewMode,
+    bar_height: 20,
+    bar_corner_radius: 3,
+    arrow_curve: 5,
+    padding: 18,
+    view_modes: ['Quarter Day', 'Half Day', 'Day', 'Week', 'Month'],
+    custom_popup_html: null,
+    on_click: function(task) {
+      // Handle task click for detailed view
+      if (task.type === 'group') {
+        // Toggle detailed view for the group
+        const tasks = data.ganttData.filter(t => t.parent === task.id);
+        tasks.forEach(t => {
+          t.hidden = !t.hidden;
+        });
+        gantt.refresh(tasks);
+      }
+    }
+  });
+
+  // Add the updateGanttView function to window scope
+  window.updateGanttView = function() {
+    const newViewMode = document.getElementById('viewMode').value;
+    const phaseFilter = document.getElementById('phaseFilter').value;
+    const sprintFilter = document.getElementById('sprintFilter').value;
+    
+    generateGantt(newViewMode, {
+      phase: phaseFilter,
+      sprint: sprintFilter
+    });
+  };
 }
 
 export async function generateWBS() {
@@ -120,7 +182,4 @@ export function showSnackbar(message) {
   snackbar.textContent = message;
   snackbar.style.opacity = 1;
   setTimeout(() => snackbar.style.opacity = 0, 3000);
-
-  
-
 }

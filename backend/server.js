@@ -336,21 +336,88 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 app.post('/generate-gantt', authenticateToken, async (req, res) => {
   try {
-    const { projectId } = req.body;
+    const { projectId, viewMode, filters } = req.body;
     const project = await Project.findOne({ _id: projectId, userId: req.user.userId });
     if (!project) return res.status(404).json({ error: 'Project not found' });
 
-    const prompt = `Generate a JSON array for a Gantt chart based on this project description: ${project.description}. Include task id, name, start, end, progress (0-100), and dependencies.`;
+    // Get tasks based on filters
+    let tasks = project.tasks;
+    
+    if (filters) {
+      if (filters.phase) {
+        tasks = tasks.filter(task => task.phase === filters.phase);
+      }
+      
+      if (filters.sprint) {
+        const today = new Date();
+        const currentSprintStart = new Date(today);
+        currentSprintStart.setDate(today.getDate() - today.getDay()); // Start of current week
+        
+        const currentSprintEnd = new Date(currentSprintStart);
+        currentSprintEnd.setDate(currentSprintStart.getDate() + 13); // 2 weeks sprint
+        
+        if (filters.sprint === 'current') {
+          tasks = tasks.filter(task => {
+            const taskDate = new Date(task.dueDate);
+            return taskDate >= currentSprintStart && taskDate <= currentSprintEnd;
+          });
+        } else if (filters.sprint === 'next') {
+          const nextSprintStart = new Date(currentSprintEnd);
+          nextSprintStart.setDate(currentSprintEnd.getDate() + 1);
+          
+          const nextSprintEnd = new Date(nextSprintStart);
+          nextSprintEnd.setDate(nextSprintStart.getDate() + 13);
+          
+          tasks = tasks.filter(task => {
+            const taskDate = new Date(task.dueDate);
+            return taskDate >= nextSprintStart && taskDate <= nextSprintEnd;
+          });
+        }
+      }
+    }
 
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4',
-      messages: [
-        { role: 'user', content: prompt }
-      ]
+    // Group tasks by phase
+    const phaseGroups = {};
+    ['Planning', 'Execution', 'Monitoring', 'Closure'].forEach(phase => {
+      const phaseTasks = tasks.filter(task => task.phase === phase);
+      if (phaseTasks.length > 0) {
+        phaseGroups[phase] = phaseTasks;
+      }
     });
 
-    const json = response.choices[0].message.content.match(/```json\s*([\s\S]+?)\s*```/);
-    const ganttData = JSON.parse(json ? json[1] : response.choices[0].message.content);
+    // Convert tasks to Gantt format
+    const ganttData = [];
+    let taskId = 1;
+
+    // Add phase groups
+    Object.entries(phaseGroups).forEach(([phase, phaseTasks]) => {
+      const groupId = `phase-${phase}`;
+      ganttData.push({
+        id: groupId,
+        name: phase,
+        start: new Date(Math.min(...phaseTasks.map(t => new Date(t.dueDate)))),
+        end: new Date(Math.max(...phaseTasks.map(t => new Date(t.dueDate)))),
+        progress: 0,
+        type: 'group',
+        hideChildren: false
+      });
+
+      // Add tasks under each phase
+      phaseTasks.forEach(task => {
+        const startDate = new Date(task.dueDate);
+        startDate.setDate(startDate.getDate() - 1); // Assume 1-day duration for tasks
+        
+        ganttData.push({
+          id: `task-${taskId++}`,
+          name: task.title,
+          start: startDate,
+          end: new Date(task.dueDate),
+          progress: task.status === 'Done' ? 100 : task.status === 'In Progress' ? 50 : 0,
+          parent: groupId,
+          type: 'task'
+        });
+      });
+    });
 
     res.json({ ganttData });
   } catch (err) {

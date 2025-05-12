@@ -381,3 +381,64 @@ body {
         visibility: hidden;
     }
 }
+
+.gantt-filters {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 10px;
+  background-color: #1a1a1a;
+  border-radius: 5px;
+}
+
+.gantt-filters select {
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #333;
+  background-color: #2a2a2a;
+  color: #fff;
+  cursor: pointer;
+}
+
+.gantt-filters select:hover {
+  border-color: #00a008;
+}
+
+.gantt-filters select:focus {
+  outline: none;
+  border-color: #00a008;
+  box-shadow: 0 0 0 2px rgba(0, 160, 8, 0.2);
+}
+
+/* Gantt chart specific styles */
+.gantt .bar-wrapper {
+  cursor: pointer;
+}
+
+.gantt .bar-wrapper:hover .bar {
+  fill: #00a008;
+}
+
+.gantt .bar-group {
+  cursor: pointer;
+}
+
+.gantt .bar-group:hover .bar {
+  fill: #00a008;
+}
+
+.gantt .grid-header {
+  fill: #1a1a1a;
+}
+
+.gantt .grid-row {
+  fill: #2a2a2a;
+}
+
+.gantt .lower-text, .gantt .upper-text {
+  fill: #fff;
+}
+
+.gantt .today-highlight {
+  fill: rgba(0, 160, 8, 0.1);
+}
