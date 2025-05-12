@@ -175,7 +175,13 @@
       if (projectId) loadChatHistory();
     });
 
-    window.addEventListener("DOMContentLoaded", loadProjects);
+    window.addEventListener("DOMContentLoaded", () => {
+      loadProjects();
+      // Add click handler for new project button
+      document.getElementById('newProjectBtn').addEventListener('click', () => {
+        document.getElementById('newProjectForm').style.display = 'block';
+      });
+    });
   </script>
 
   <script type="module">
@@ -191,11 +197,6 @@
   </script>
 
 <script>
-    // Add click handler for new project button
-    document.getElementById('newProjectBtn').addEventListener('click', () => {
-      document.getElementById('newProjectForm').style.display = 'block';
-    });
-
     async function createProject() {
       const token = localStorage.getItem("jwt");
       if (!token) return;
