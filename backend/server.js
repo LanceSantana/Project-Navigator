@@ -472,6 +472,7 @@ function ensureTaskTitles(tasks) {
 app.post('/chat', authenticateToken, async (req, res) => {
     try {
         const { projectId, message } = req.body;
+        let newTasks = [];
         
         // Verify project exists and belongs to user
         const project = await Project.findOne({
@@ -540,7 +541,6 @@ If the user asks for a new task, always reply with an UPDATE_PROJECT: block cont
         if (displayResponse.includes('UPDATE_PROJECT:')) {
             // Try to extract the new tasks for a friendly confirmation
             let friendlyMsg = '';
-            let newTasks = [];
             try {
                 // Try to parse the block for both 'tasks' and 'newTasks' keys
                 let updateJson = null;
