@@ -407,9 +407,12 @@ app.post('/generate-gantt', authenticateToken, async (req, res) => {
         const startDate = new Date(task.dueDate);
         startDate.setDate(startDate.getDate() - 1); // Assume 1-day duration for tasks
         
+        // Fallback for missing title/name
+        const taskTitle = task.title || task.name || 'Untitled Task';
+
         ganttData.push({
           id: `task-${taskId++}`,
-          name: task.title,
+          name: taskTitle,
           start: startDate,
           end: new Date(task.dueDate),
           progress: task.status === 'Done' ? 100 : task.status === 'In Progress' ? 50 : 0,
@@ -451,6 +454,19 @@ app.post('/generate-wbs', authenticateToken, async (req, res) => {
   }
 });
 
+// Helper to ensure every task has a title
+function ensureTaskTitles(tasks) {
+    let untitledCount = 1;
+    return tasks.map(task => {
+        if (!task.title && task.name) {
+            task.title = task.name;
+        }
+        if (!task.title) {
+            task.title = `Untitled Task ${untitledCount++}`;
+        }
+        return task;
+    });
+}
 
 // OpenAI API Endpoint (protected)
 app.post('/chat', authenticateToken, async (req, res) => {
@@ -576,6 +592,15 @@ If the user asks for a new task, always reply with an UPDATE_PROJECT: block cont
                     }
                 );
             }
+        }
+
+        // In /chat endpoint, before pushing new tasks to MongoDB
+        if (newTasks.length > 0) {
+            newTasks = ensureTaskTitles(newTasks);
+            await Project.findOneAndUpdate(
+                { _id: projectId },
+                { $push: { tasks: { $each: newTasks } } }
+            );
         }
 
         res.json({ reply: displayResponse });
