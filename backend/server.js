@@ -519,23 +519,16 @@ If the user asks for a new task, always reply with an UPDATE_PROJECT: block cont
 
         let aiResponse = response.data.choices[0].message.content;
         
-        // Store AI's response
-        await ChatMessage.create({
-            userId: req.user.userId,
-            projectId,
-            message: aiResponse,
-            isUser: false
-        });
-
-        // Remove UPDATE_PROJECT block from the AI response before sending to the user
-        if (aiResponse.includes('UPDATE_PROJECT:')) {
+        // Remove UPDATE_PROJECT block from the AI response before sending to the user and before saving to the database
+        let displayResponse = aiResponse;
+        if (displayResponse.includes('UPDATE_PROJECT:')) {
             // Try to extract the new tasks for a friendly confirmation
             let friendlyMsg = '';
             let newTasks = [];
             try {
                 // Try to parse the block for both 'tasks' and 'newTasks' keys
                 let updateJson = null;
-                const match = aiResponse.match(/UPDATE_PROJECT:\s*({[\s\S]+})/);
+                const match = displayResponse.match(/UPDATE_PROJECT:\s*({[\s\S]+})/);
                 if (match) {
                     updateJson = JSON.parse(match[1]);
                 }
@@ -549,22 +542,25 @@ If the user asks for a new task, always reply with an UPDATE_PROJECT: block cont
                 if (newTasks.length > 0) {
                     const taskNames = newTasks.map(t => t.name || t.title).join(', ');
                     friendlyMsg = `\n\nThe following tasks have been added to your project: ${taskNames}.`;
-                    // Actually append the new tasks to the project in MongoDB
-                    await Project.findOneAndUpdate(
-                        { _id: projectId },
-                        { $push: { tasks: { $each: newTasks } } }
-                    );
                 }
             } catch (e) {
                 // fallback: generic confirmation
                 friendlyMsg = '\n\nYour tasks have been added to the project.';
             }
-            aiResponse = aiResponse.split('UPDATE_PROJECT:')[0].trim() + friendlyMsg;
+            displayResponse = displayResponse.split('UPDATE_PROJECT:')[0].trim() + friendlyMsg;
         }
 
+        // Store AI's response (cleaned)
+        await ChatMessage.create({
+            userId: req.user.userId,
+            projectId,
+            message: displayResponse,
+            isUser: false
+        });
+
         // --- PHASE TRANSITION LOGIC (unchanged) ---
-        if (aiResponse.includes('TRANSITION_PHASE:')) {
-            const newPhase = aiResponse.split('TRANSITION_PHASE:')[1].trim();
+        if (displayResponse.includes('TRANSITION_PHASE:')) {
+            const newPhase = displayResponse.split('TRANSITION_PHASE:')[1].trim();
             if (['Planning', 'Execution', 'Monitoring', 'Closure'].includes(newPhase)) {
                 await Project.findOneAndUpdate(
                     { _id: projectId },
@@ -579,7 +575,7 @@ If the user asks for a new task, always reply with an UPDATE_PROJECT: block cont
             }
         }
 
-        res.json({ reply: aiResponse });
+        res.json({ reply: displayResponse });
 
     } catch (error) {
         console.error('Error:', error.response ? error.response.data : error.message);
