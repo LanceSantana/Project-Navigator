@@ -23,30 +23,21 @@ The **Project Navigator Chatbot** is a capstone project designed to assist proje
 
 ## Technology Stack
 
-Frontend:
-Built with HTML, CSS, and vanilla JavaScript to provide a lightweight and responsive user interface.
+**Frontend**: Built with **HTML**, **CSS**, and **JavaScript** for a clean, responsive UI.
 
-Backend:
-Powered by Node.js and Express.js, enabling a robust RESTful API and server-side logic.
+**Backend**:** Node.js** with **Express.js** for API routing and server logic.
 
-Database:
-Utilizes MongoDB, with Mongoose as the ODM to enforce schemas and simplify database operations.
+**Database**: **MongoDB**, accessed via **Mongoose** for schema-based modeling.
 
-AI Integration:
-Integrated with the OpenAI API (ChatGPT) for intelligent project assistance, task suggestions, and planning support.
+**AI Integration**: Uses the **OpenAI (ChatGPT) API ** for intelligent task and project guidance.
 
-Authentication & Security:
-Implements JWT (JSON Web Tokens) and bcrypt for secure user authentication and password hashing.
+**Auth & Security**: Implements** JWT** for authentication and **bcrypt** for password hashing.
 
-File Handling:
-Uses Multer middleware to handle file uploads (e.g., project assets).
+**File Uploads**: Handled using **Multer** middleware.
 
-Cloud Hosting:
-Designed to work with MongoDB Atlas for managed cloud-based database deployment.
+**Cloud Hosting**: Deployed with **MongoDB Atlas** for managed cloud storage.
 
-Standards-Based Framework:
-Incorporates PMBOK (Project Management Body of Knowledge) principles to guide project structuring and recommendations.
-
+**Standards**: Aligns with **PMBOK** guidelines for project management best practices.
 ---
 
 ## Installation and Usage
