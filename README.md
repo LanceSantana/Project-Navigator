@@ -23,14 +23,25 @@ The **Project Navigator Chatbot** is a capstone project designed to assist proje
 
 ## Technology Stack
 
-- **ChatGPT Plus:** Built using the ChatGPT Store for adaptability and advanced AI-driven responses.
-- **PMBOK Standards:** Reliable and industry-recognized knowledge base for project management.
-- **HTML/CSS/JavaScript:** Frontend design for a seamless user experience.
+**Frontend**: Built with **HTML**, **CSS**, and **JavaScript** for a clean, responsive UI.
 
+**Backend**: **Node.js** with **Express.js** for API routing and server logic.
+
+**Database**: **MongoDB**, accessed via **Mongoose** for schema-based modeling.
+
+**AI Integration**: Uses the **OpenAI (ChatGPT) API** for intelligent task and project guidance.
+
+**Auth & Security**: Implements **JWT** for authentication and **bcrypt** for password hashing.
+
+**File Uploads**: Handled using **Multer** middleware.
+
+**Cloud Hosting**: Deployed with **MongoDB Atlas** for managed cloud storage.
+
+**Standards**: Aligns with **PMBOK** guidelines for project management best practices.
 ---
 
 ## Installation and Usage
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/yourusername/project-navigator-chatbot.git
+   git clone https://github.com/LanceSantana/project-navigator-chatbot.git
