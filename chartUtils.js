@@ -45,102 +45,126 @@ export async function generateGantt(viewMode = 'Month', filters = {}) {
   const token = localStorage.getItem("jwt");
   const projectId = localStorage.getItem("currentProjectId");
 
-  if (!token) return showSnackbar("Please log in first.");
-  if (!projectId) return showSnackbar("Please select a project first.");
+  console.log('[Gantt] Starting generation for projectId:', projectId, 'viewMode:', viewMode, 'filters:', filters);
 
-  const response = await fetch(`${API_URL}/generate-gantt`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}`
-    },
-    body: JSON.stringify({
-      projectId,
-      dateRange: { from: -30, to: 30 },
-      viewMode,
-      filters
-    })
-  });
-
-  const data = await response.json();
-  const chartContainer = document.getElementById('chartContainer');
-  chartContainer.innerHTML = '';
-
-  // Create a separate div for filters
-  const filterControls = document.createElement('div');
-  filterControls.className = 'gantt-filters';
-  filterControls.innerHTML = `
-    <select id="viewMode" onchange="updateGanttView()">
-      <option value="Month" ${viewMode === 'Month' ? 'selected' : ''}>Monthly View</option>
-      <option value="Week" ${viewMode === 'Week' ? 'selected' : ''}>Weekly View</option>
-      <option value="Day" ${viewMode === 'Day' ? 'selected' : ''}>Daily View</option>
-    </select>
-    <select id="phaseFilter" onchange="updateGanttView()">
-      <option value="">All Phases</option>
-      <option value="Planning">Planning</option>
-      <option value="Execution">Execution</option>
-      <option value="Monitoring">Monitoring</option>
-      <option value="Closure">Closure</option>
-    </select>
-    <select id="sprintFilter" onchange="updateGanttView()">
-      <option value="">All Sprints</option>
-      <option value="current">Current Sprint</option>
-      <option value="next">Next Sprint</option>
-    </select>
-  `;
-  chartContainer.appendChild(filterControls);
-
-  // Show a message if there are no tasks
-  if (!data.ganttData || data.ganttData.length === 0) {
-    const msg = document.createElement('div');
-    msg.style.color = 'white';
-    msg.style.padding = '20px';
-    msg.textContent = 'No tasks found for this project. Please add tasks to see the Gantt chart.';
-    chartContainer.appendChild(msg);
+  if (!token) {
+    showSnackbar("Please log in first.");
+    console.warn('[Gantt] No token found');
+    return;
+  }
+  if (!projectId) {
+    showSnackbar("Please select a project first.");
+    console.warn('[Gantt] No projectId found');
     return;
   }
 
-  // Create a separate div for the Gantt chart itself
-  const ganttDiv = document.createElement('div');
-  ganttDiv.id = 'ganttChart';
-  chartContainer.appendChild(ganttDiv);
-
-  // Initialize Gantt chart in the new div
-  const gantt = new Gantt("#ganttChart", data.ganttData, {
-    header_height: 50,
-    column_width: 30,
-    step: 24,
-    view_mode: viewMode,
-    bar_height: 20,
-    bar_corner_radius: 3,
-    arrow_curve: 5,
-    padding: 18,
-    view_modes: ['Quarter Day', 'Half Day', 'Day', 'Week', 'Month'],
-    custom_popup_html: null,
-    on_click: function(task) {
-      // Handle task click for detailed view
-      if (task.type === 'group') {
-        // Toggle detailed view for the group
-        const tasks = data.ganttData.filter(t => t.parent === task.id);
-        tasks.forEach(t => {
-          t.hidden = !t.hidden;
-        });
-        gantt.refresh(tasks);
-      }
-    }
-  });
-
-  // Add the updateGanttView function to window scope
-  window.updateGanttView = function() {
-    const newViewMode = document.getElementById('viewMode').value;
-    const phaseFilter = document.getElementById('phaseFilter').value;
-    const sprintFilter = document.getElementById('sprintFilter').value;
-    
-    generateGantt(newViewMode, {
-      phase: phaseFilter,
-      sprint: sprintFilter
+  try {
+    const response = await fetch(`${API_URL}/generate-gantt`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        projectId,
+        dateRange: { from: -30, to: 30 },
+        viewMode,
+        filters
+      })
     });
-  };
+
+    if (!response.ok) {
+      console.error('[Gantt] Failed to fetch:', response.status, response.statusText);
+      showSnackbar('Failed to load Gantt chart data.');
+      return;
+    }
+
+    const data = await response.json();
+    console.log('[Gantt] Data received:', data);
+    const chartContainer = document.getElementById('chartContainer');
+    chartContainer.innerHTML = '';
+
+    // Create a separate div for filters
+    const filterControls = document.createElement('div');
+    filterControls.className = 'gantt-filters';
+    filterControls.innerHTML = `
+      <select id="viewMode" onchange="updateGanttView()">
+        <option value="Month" ${viewMode === 'Month' ? 'selected' : ''}>Monthly View</option>
+        <option value="Week" ${viewMode === 'Week' ? 'selected' : ''}>Weekly View</option>
+        <option value="Day" ${viewMode === 'Day' ? 'selected' : ''}>Daily View</option>
+      </select>
+      <select id="phaseFilter" onchange="updateGanttView()">
+        <option value="">All Phases</option>
+        <option value="Planning">Planning</option>
+        <option value="Execution">Execution</option>
+        <option value="Monitoring">Monitoring</option>
+        <option value="Closure">Closure</option>
+      </select>
+      <select id="sprintFilter" onchange="updateGanttView()">
+        <option value="">All Sprints</option>
+        <option value="current">Current Sprint</option>
+        <option value="next">Next Sprint</option>
+      </select>
+    `;
+    chartContainer.appendChild(filterControls);
+
+    // Show a message if there are no tasks
+    if (!data.ganttData || data.ganttData.length === 0) {
+      console.warn('[Gantt] No tasks found in ganttData:', data.ganttData);
+      const msg = document.createElement('div');
+      msg.style.color = 'white';
+      msg.style.padding = '20px';
+      msg.textContent = 'No tasks found for this project. Please add tasks to see the Gantt chart.';
+      chartContainer.appendChild(msg);
+      return;
+    }
+
+    // Create a separate div for the Gantt chart itself
+    const ganttDiv = document.createElement('div');
+    ganttDiv.id = 'ganttChart';
+    chartContainer.appendChild(ganttDiv);
+
+    // Initialize Gantt chart in the new div
+    console.log('[Gantt] Rendering chart with data:', data.ganttData);
+    const gantt = new Gantt("#ganttChart", data.ganttData, {
+      header_height: 50,
+      column_width: 30,
+      step: 24,
+      view_mode: viewMode,
+      bar_height: 20,
+      bar_corner_radius: 3,
+      arrow_curve: 5,
+      padding: 18,
+      view_modes: ['Quarter Day', 'Half Day', 'Day', 'Week', 'Month'],
+      custom_popup_html: null,
+      on_click: function(task) {
+        // Handle task click for detailed view
+        if (task.type === 'group') {
+          // Toggle detailed view for the group
+          const tasks = data.ganttData.filter(t => t.parent === task.id);
+          tasks.forEach(t => {
+            t.hidden = !t.hidden;
+          });
+          gantt.refresh(tasks);
+        }
+      }
+    });
+
+    // Add the updateGanttView function to window scope
+    window.updateGanttView = function() {
+      const newViewMode = document.getElementById('viewMode').value;
+      const phaseFilter = document.getElementById('phaseFilter').value;
+      const sprintFilter = document.getElementById('sprintFilter').value;
+      
+      generateGantt(newViewMode, {
+        phase: phaseFilter,
+        sprint: sprintFilter
+      });
+    };
+  } catch (err) {
+    console.error('[Gantt] Error during generation:', err);
+    showSnackbar('An error occurred while generating the Gantt chart.');
+  }
 }
 
 export async function generateWBS() {
