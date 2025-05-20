@@ -547,7 +547,10 @@ If the user asks for a new task, always reply with an UPDATE_PROJECT: block cont
                 // fallback: generic confirmation
                 friendlyMsg = '\n\nYour tasks have been added to the project.';
             }
-            displayResponse = displayResponse.split('UPDATE_PROJECT:')[0].trim() + friendlyMsg;
+            displayResponse = displayResponse.split('UPDATE_PROJECT:')[0].trim();
+            // Remove trailing preamble if present
+            displayResponse = displayResponse.replace(/Here is the updated project block:?$/i, '').trim();
+            if (friendlyMsg) displayResponse += friendlyMsg;
         }
 
         // Store AI's response (cleaned)
