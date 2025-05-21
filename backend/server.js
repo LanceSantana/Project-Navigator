@@ -567,6 +567,10 @@ If the user asks for a new task, always reply with an UPDATE_PROJECT: block cont
             // Remove trailing preamble if present
             displayResponse = displayResponse.replace(/Here is the updated project block:?$/i, '').trim();
             if (friendlyMsg) displayResponse += friendlyMsg;
+            // Fallback if displayResponse is empty
+            if (!displayResponse) {
+                displayResponse = "Sorry, I couldn't process your request right now. Please try again in a moment!";
+            }
         }
 
         // Store AI's response (cleaned)
