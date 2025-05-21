@@ -515,7 +515,9 @@ Your responses should be contextual to the current phase and project status.
 You can suggest phase-specific actions, track progress, and provide relevant insights.
 Here is the current project context: ${projectContext}
 
-If the user asks for a new task, always reply with an UPDATE_PROJECT: block containing the new task, with your best guess for phase and due date. If the user is vague, infer reasonable values.`;
+If the user asks for a new task, always reply with an UPDATE_PROJECT: block containing the new task, with your best guess for phase and due date. If the user is vague, infer reasonable values.
+
+IMPORTANT: When responding to the user, **never** include internal identifiers, database IDs (like TaskID: ...), or technical details about the data structure. Refer to tasks only by their titles or names, and use human-readable dates.`;
 
         const response = await axios.post(
             'https://api.openai.com/v1/chat/completions',
