@@ -35,6 +35,9 @@
       <button class="button" onclick="login()">Login</button>
     </div>
 
+    <button class="button" style="margin-top: 10px;" onclick="loginAsGuest()">Continue as Guest</button>
+  </div>
+
     <!-- Output/Error Message -->
     <p id="output"></p>
 
@@ -75,12 +78,19 @@
 
       if (data.token) {
         localStorage.setItem("jwt", data.token);
+        localStorage.removeItem("guestMode"); // Clear guest mode if set
         loginSuccess();
         window.location.href = 'main.html';
       } else {
         document.getElementById("output").innerText = data.error;
       }
     }
+
+    function loginAsGuest() {
+    localStorage.setItem('guestMode', 'true');
+    localStorage.removeItem("jwt"); // Ensure token is not set
+    window.location.href = 'main.html';
+}
 
     function loginSuccess() {
       document.getElementById('signup-form').style.display = 'none';

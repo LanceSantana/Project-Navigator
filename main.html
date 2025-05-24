@@ -82,7 +82,8 @@
         // Check if user is logged in
         function checkAuth() {
             const token = localStorage.getItem('jwt');
-            if (!token) {
+            const isGuest = localStorage.getItem('guestMode') === 'true';
+            if (!token && !isGuest) {
                 window.location.href = 'index.html';
                 return;
             }
@@ -301,7 +302,16 @@
             }
         }
             */
-            async function createProject() {
+
+// Guest Mode Label + Disable Delete
+    window.addEventListener('load', () => {
+      if (localStorage.getItem('guestMode') === 'true') {
+        document.getElementById('guestLabel').style.display = 'block';
+        document.getElementById('deleteProjectBtn').disabled = true;
+      }
+    });
+
+async function createProject() {
     const token = checkAuth();
     if (!token) return;
 
@@ -540,8 +550,8 @@ async function appendMessage(content, isUser) {
             messageDiv.className = 'message bot step';
             chatBox.appendChild(messageDiv);
 
-            await typeText(marked.parse(step.trim()), messageDiv);
-            //await typeText(step.trim(), messageDiv);
+            //await typeText(marked.parse(step.trim()), messageDiv);
+            await typeText(step.trim(), messageDiv);
         }
         document.getElementById('skipButton').style.display = 'none'; // Hide when done
         skipTyping = false;
@@ -642,8 +652,6 @@ function typeText(text, element, speed = 20) {
     });
 }
 */
-
-
 //2:19 AM typetext: still keeps numbering
 
 function typeText(html, element, speed = 50) {
@@ -680,7 +688,7 @@ function typeText(html, element, speed = 50) {
     });
 }
 
-//accurately animated version, 2:24AM
+//accurately animated
 /* 
 function typeText(html, element, speed = 20) {
     return new Promise(resolve => {
@@ -815,6 +823,8 @@ if (skipButton) {
 
         function logout() {
             localStorage.removeItem("jwt");
+            localStorage.removeItem("guestMode");
+            localStorage.removeItem("guestProjects");
             window.location.href = 'index.html';
         }
 
