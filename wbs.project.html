@@ -1,0 +1,1982 @@
+<!DOCTYPE html>
+<!-- Report generated 5/25/2025, 8:30:01 PM -->
+<!-- Report prepared by wbs-markdown (https://github.com/brainlid/wbs_markdown) version 1.1.4 -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://unpkg.com/vue@2.4.2/dist/vue.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.0/Chart.bundle.min.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+/* Layout */
+html {
+  height: 100%;
+  box-sizing: border-box;
+}
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
+}
+body {
+  position: relative;
+  margin: 0;
+  padding-bottom: 6rem;
+  min-height: 100%;
+  font-family: "Helvetica Neue", Arial, sans-serif;
+}
+footer {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 1rem 0;
+
+  font-size: 10px;
+  text-align: center;
+  margin-top: 20px;
+  background-color: #eeeeee;
+}
+
+h1, h2, h3 {
+  margin-top: 1em;
+  margin-bottom: 16px;
+  font-weight: bold;
+}
+h2 {
+  padding-bottom: 0.3em;
+  font-size: 1.75em;
+  line-height: 1.225;
+  border-bottom: 1px solid #eee;
+}
+p { margin: 0; }
+ul {
+  padding-left: 0;
+  list-style-type: square;
+}
+
+</style>
+<style>
+.progress {
+  margin-bottom: 0;
+}
+
+</style>
+<style>
+.detail-level {
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+}
+
+</style>
+<style>
+.display-filter {
+  margin-bottom: 10px;
+}
+.display-filter .current-settings-text {
+  margin-left: 10px;
+  color: #666;
+}
+.display-filter .options {
+  margin-left: 20px;
+}
+
+.display-filter .button-style-toggle i.primary {
+  font-size: 20px;
+  min-width: 20px;
+}
+
+</style>
+<style>
+.display-style {
+  margin-bottom: 10px;
+}
+.display-style .current-settings-text {
+  margin-left: 10px;
+  color: #666;
+}
+.display-style .options {
+  margin-left: 20px;
+}
+
+.display-style .button-style-toggle i.primary {
+  font-size: 20px;
+  min-width: 20px;
+}
+
+</style>
+<style>
+/* invalid-story-warning */
+#invalid-story-warning {
+  margin-top: 20px;
+}
+#invalid-story-warning ul {
+  font-size: 20px;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+</style>
+<style>
+/* Security warning for LocalStorage */
+#security-storage-warning {
+  margin-top: 20px;
+}
+#security-storage-warning .panel-body p {
+  margin-bottom: 10px;
+}
+
+</style>
+<style>
+/* Story table */
+.story-table-data .toggle-table-display .fa {
+  font-size: 32px;
+}
+
+</style>
+<style>
+/* stories-total component display */
+.stories-total-display {
+  font-weight: bold;
+  text-align: right;
+}
+.stories-total-display .confidence-display {
+  min-width: 40px;
+  display: inline-block;
+}
+.stories-total-display .work-total {
+  display: inline-block;
+  min-width: 40px;
+}
+
+</style>
+<style>
+/* story-label */
+.story-label {
+  position: absolute;
+  left: 0px;
+  top: 2px;
+}
+.story-label .label {
+  visibility: hidden;
+}
+li.wbs-item:hover > span > .story-label .label {
+  visibility: visible;
+}
+.story-label .label.show-always {
+  visibility: visible;
+}
+.story-label .label-anchor {
+  position: absolute;
+  left: -30px;
+}
+.story-label .label-anchor .label {
+  position: absolute;
+  right: 0;
+}
+
+</style>
+<style>
+i.task-indicator {
+  background-color: inherit;
+  box-shadow: none;
+}
+
+main.style-bullets i.task-indicator {
+  margin: 0.25em 0 0;
+  left: -1.2em;
+  position: absolute;
+}
+main.style-numbered i.task-indicator {
+  margin: 0.25em 0.25em 0 0;
+  /* margin: 0.25em 0.25em 0 0; */
+  position: inherit;
+}
+main.style-colored-checks i.task-indicator.show-incomplete {
+  background-color: pink;
+  box-shadow: red 0px 0px 10px;
+}
+main.style-colored-checks i.task-indicator.show-complete {
+  background-color: lightgreen;
+  box-shadow: green 0px 0px 10px;
+}
+
+</style>
+<style>
+li.story {
+  list-style-type: none;
+}
+li.story .story-work-display {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 300px;
+  text-align: right;
+  vertical-align: middle;
+}
+li.story .story-work-display .total-progress {
+  display: inline-block;
+  width: 200px;
+}
+li.story .story-work-display .work-total {
+  position: relative;
+  vertical-align: top;
+  display: inline-block;
+  text-align: right;
+  min-width: 40px;
+  /* supported differently in various browsers */
+  cursor: pointer;
+  cursor: hand;
+}
+li.story .story-work-display .work-total .toggle-story-details {
+  position: absolute;
+  right: -25px;
+  top: 0;
+  display: inline;
+}
+li.story .story-work-display .confidence-display {
+  vertical-align: top;
+  font-weight: bold;
+  text-align: right;
+  min-width: 40px;
+  display: inline-block;
+}
+
+</style>
+<style>
+li.task-parent .sub-work-display {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 260px;
+  text-align: left;
+}
+li.task-parent .sub-work-display .total-progress {
+  display: inline-block;
+  width: 200px;
+}
+li.task-parent .sub-work-display .work-total {
+  vertical-align: top;
+  display: inline-block;
+  color: blue;
+  margin-left: 15px;
+  font-weight: bold;
+}
+li.task-parent:hover > span > .sub-work-display > .work-total {
+  background-color: rgba(255, 247, 89, 0.5);
+}
+
+/* Totals display */
+li.task-parent .sub-work-display .work-total {
+  visibility: hidden;
+}
+li.task-parent .sub-work-display .total-progress {
+  visibility: hidden;
+}
+main.style-totals li.task-parent .sub-work-display .work-total {
+  visibility: visible;
+}
+main.style-progress li.task-parent .sub-work-display .total-progress {
+  visibility: visible;
+}
+
+</style>
+<style>
+li.wbs-item {
+  position: relative;
+  margin-left: 1.2em;
+}
+li.wbs-item.show-tick {
+  list-style: none;
+  list-style-position: inside
+}
+li.wbs-item.show-tick:hover {
+  background-color: rgba(225, 235, 245, 0.5);
+}
+li.wbs-item .work-amount {
+  position: absolute;
+  top: 0;
+  right: 15px;
+  width: 50px;
+  text-align: right;
+  display: inline-block;
+  color: #666;
+}
+li.wbs-item .work-note {
+  position: absolute;
+  top: 0;
+  right: -25px;
+  display: inline-block;
+  color: rgb(241, 202, 66);
+}
+li.wbs-item .collapsed-toggle-display {
+  position: absolute;
+  left: -1.2em;
+  color: #777;
+  display: none;
+}
+li.wbs-item.collapsed {
+  /* don't display list-item bullet when collapsed  */
+  list-style: none;
+}
+li.wbs-item.collapsed .collapsed-toggle-display {
+  display: inline;
+}
+li.wbs-item.collapsed ul {
+  display: none;
+}
+li.wbs-item .work-amount .no-estimate-warning {
+  margin: 0;
+}
+
+/* Style display changes */
+main.style-bullets li.wbs-item .position-display {
+  display: none;
+}
+main.style-numbered li.wbs-item:not(.story) {
+  list-style: none;
+  margin-left: 0.9em;
+}
+main.style-numbered li.wbs-item .position-display {
+  color: #777;
+  margin-right: 10px;
+  font-weight: bold;
+}
+
+</style>
+    <title>WBSM Project Report</title>
+  </head>
+  <body>
+    <script>var reportConfig = {"reportTitle":"WBSM Project Report","defaultWorkUnit":"d","unitConversion":{"h":1,"d":6,"w":30,"m":120},"avgHoursPerDay":4.5,"workUnitConfidencePct":{"h":95,"d":80,"w":60,"m":30},"assets":[{"script":"https://unpkg.com/vue@2.4.2/dist/vue.js"},{"script":"https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.js"},{"script":"https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.0/Chart.bundle.min.js"},{"stylesheet":"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"},{"stylesheet":"https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"},{"style":"./components/css/main.css"},{"style":"./components/css/bs-percentage.css"},{"style":"./components/css/detail-level.css"},{"style":"./components/css/display-filter.css"},{"style":"./components/css/display-style.css"},{"style":"./components/css/invalid-story-panel.css"},{"style":"./components/css/security-local-storage.css"},{"style":"./components/css/stories-table.css"},{"style":"./components/css/stories-total.css"},{"style":"./components/css/story-label.css"},{"style":"./components/css/task-indicator.css"},{"style":"./components/css/wbs-item-story.css"},{"style":"./components/css/wbs-item-task-parent.css"},{"style":"./components/css/wbs-item.css"}],"markdownItOptions":{},"markdownItPlugins":[{"require":"markdown-it-attrs"}],"htmlPlugins":[{"require":"./htmlPlugins/wbs/wbs.js"},{"require":"./htmlPlugins/vue/vue.js"},{"require":"./htmlPlugins/reportConfig/reportConfig.js"}],"components":[{"vue":"./components/bs-percentage/bs-percentage.vue"},{"vue":"./components/confidence-display/confidence-display.vue"},{"vue":"./components/detail-level/detail-level.vue"},{"vue":"./components/display-filter/display-filter.vue"},{"vue":"./components/display-style/display-style.vue"},{"vue":"./components/invalid-story-panel/invalid-story-panel.vue"},{"vue":"./components/position-display/position-display.vue"},{"vue":"./components/security-local-storage/security-local-storage.vue"},{"vue":"./components/stories-chart/stories-chart.vue"},{"vue":"./components/stories-table/stories-table.vue"},{"vue":"./components/stories-toggle/stories-toggle.vue"},{"vue":"./components/stories-total/stories-total.vue"},{"vue":"./components/story-label/story-label.vue"},{"vue":"./components/tick-display/tick-display.vue"},{"vue":"./components/wbs-item/wbs-item.vue"},{"js":"./components/vue-main/vue-main.js"}],"document_id":"3750f701e9ecbaae60ff0c6c051a5af8"}</script>
+
+    <div class="container">
+      <main role="main" id="vue-root" v-bind:class="classObject">
+        <security-local-storage :allowed="can_use_local_storage"></security-local-storage>
+        <invalid-story-panel :invalid="invalid_story_links"></invalid-story-panel>
+        <h1>Sample WBS Markdown Project File</h1>
+<p>Generate using <code>wbsm report</code>. Generates <code>wbs.project.html</code>.</p>
+<p>Feature Definition Example:</p>
+<pre><code class="language-markdown">- Unlinked (group work item's not linked to a story) {story=&quot;null&quot;}
+- Higher-level user feature/story - [PRJ-001](https://github.com/brainlid/wbs_markdown/issues/1) (Initials) {story=&quot;001&quot;}
+</code></pre>
+<p>Deliverable Item Examples:</p>
+<pre><code class="language-markdown">- [ ] incomplete item with estimated work size of 3 days {link=001 work=3d}
+- [ ] explicitly set confidence value (as percent) {link=001 work=3d confidence=20}
+- [ ] item with a note {link=001 work=3d note=&quot;shows up in the data table&quot;}
+- [x] completed work item, 2 hours estimated {link=001 work=2h}
+- [x] completed work item, tracked actual time {link=001 work=2h actual=3.25h}
+</code></pre>
+<h2>Stories</h2>
+<stories-chart :story_work="story_work" :stories="active_stories"></stories-chart>
+<stories-toggle v-on:toggle="toggleAllStories"></stories-toggle>
+<ul>
+<wbs-item v-on:register="registered" v-on:togglestory="toggleStory" :story_work="story_work" :active_stories="active_stories" :stories="active_stories" :showmode="show_mode" :positions="positions" :detaillevel="selected_level"story="null"><strong>null</strong>: Unlinked</wbs-item>
+</ul>
+<h3>Group 1</h3>
+<ul>
+<wbs-item v-on:register="registered" v-on:togglestory="toggleStory" :story_work="story_work" :active_stories="active_stories" :stories="active_stories" :showmode="show_mode" :positions="positions" :detaillevel="selected_level"story="123" group="Group 1"><strong>123</strong>: Some Small feature - <a href="https://github.com/brainlid/wbs_markdown/issues/1">PRJ-001</a> (BL)</wbs-item>
+<wbs-item v-on:register="registered" v-on:togglestory="toggleStory" :story_work="story_work" :active_stories="active_stories" :stories="active_stories" :showmode="show_mode" :positions="positions" :detaillevel="selected_level"story="234" group="Group 1"><strong>234</strong>: Story 234 description</wbs-item>
+</ul>
+<stories-total group="Group 1" :story_work="story_work" :stories="active_stories" :story_groups="story_groups"></stories-total>
+<h3>Group 2</h3>
+<ul>
+<wbs-item v-on:register="registered" v-on:togglestory="toggleStory" :story_work="story_work" :active_stories="active_stories" :stories="active_stories" :showmode="show_mode" :positions="positions" :detaillevel="selected_level"story="345" group="Group 2"><strong>345</strong>: Story 345 description</wbs-item>
+</ul>
+<stories-total group="Group 2" :story_work="story_work" :stories="active_stories" :story_groups="story_groups"></stories-total>
+<h3>Total</h3>
+<stories-total :story_work="story_work" :stories="active_stories" :story_groups="story_groups"></stories-total>
+<h2>MyProject</h2>
+<display-filter v-on:change="filterChanged" :showmode="show_mode"></display-filter>
+<display-style v-on:change="styleChanged" :styleoptions="style_display"></display-style>
+<detail-level v-on:change="levelChanged" :maxlevel="max_level" :selectedlevel="selected_level"></detail-level>
+<h3>Code</h3>
+<ul>
+<wbs-item v-on:register="registered" v-on:togglestory="toggleStory" :story_work="story_work" :active_stories="active_stories" :stories="active_stories" :showmode="show_mode" :positions="positions" :detaillevel="selected_level">Project
+<ul>
+<wbs-item v-on:register="registered" v-on:togglestory="toggleStory" :story_work="story_work" :active_stories="active_stories" :stories="active_stories" :showmode="show_mode" :positions="positions" :detaillevel="selected_level">Module A
+<ul>
+<wbs-item v-on:register="registered" v-on:togglestory="toggleStory" :story_work="story_work" :active_stories="active_stories" :stories="active_stories" :showmode="show_mode" :positions="positions" :detaillevel="selected_level"work="1d":work_item='true' :done='false'><tick-display :done='false'></tick-display> unlinked (not linked to a story)</wbs-item>
+<wbs-item v-on:register="registered" v-on:togglestory="toggleStory" :story_work="story_work" :active_stories="active_stories" :stories="active_stories" :showmode="show_mode" :positions="positions" :detaillevel="selected_level">Sub 0</wbs-item>
+<wbs-item v-on:register="registered" v-on:togglestory="toggleStory" :story_work="story_work" :active_stories="active_stories" :stories="active_stories" :showmode="show_mode" :positions="positions" :detaillevel="selected_level"work="1d" link="123":work_item='true' :done='true'><tick-display :done='true'></tick-display> Sub 1</wbs-item>
+<wbs-item v-on:register="registered" v-on:togglestory="toggleStory" :story_work="story_work" :active_stories="active_stories" :stories="active_stories" :showmode="show_mode" :positions="positions" :detaillevel="selected_level"work="2d" link="123":work_item='true' :done='false'><tick-display :done='false'></tick-display> Sub 2</wbs-item>
+<wbs-item v-on:register="registered" v-on:togglestory="toggleStory" :story_work="story_work" :active_stories="active_stories" :stories="active_stories" :showmode="show_mode" :positions="positions" :detaillevel="selected_level"work="5h" link="234" actual="6h":work_item='true' :done='true'><tick-display :done='true'></tick-display> Sub 3</wbs-item>
+<wbs-item v-on:register="registered" v-on:togglestory="toggleStory" :story_work="story_work" :active_stories="active_stories" :stories="active_stories" :showmode="show_mode" :positions="positions" :detaillevel="selected_level">Sub 4</wbs-item>
+</ul>
+</wbs-item>
+<wbs-item v-on:register="registered" v-on:togglestory="toggleStory" :story_work="story_work" :active_stories="active_stories" :stories="active_stories" :showmode="show_mode" :positions="positions" :detaillevel="selected_level">Module B
+<ul>
+<wbs-item v-on:register="registered" v-on:togglestory="toggleStory" :story_work="story_work" :active_stories="active_stories" :stories="active_stories" :showmode="show_mode" :positions="positions" :detaillevel="selected_level"work="3h" link="123":work_item='true' :done='true'><tick-display :done='true'></tick-display> artwork updated</wbs-item>
+<wbs-item v-on:register="registered" v-on:togglestory="toggleStory" :story_work="story_work" :active_stories="active_stories" :stories="active_stories" :showmode="show_mode" :positions="positions" :detaillevel="selected_level"work="1w" link="234" confidence="30":work_item='true' :done='false'><tick-display :done='false'></tick-display> &quot;Right to be Forgotten&quot; function implemented</wbs-item>
+<wbs-item v-on:register="registered" v-on:togglestory="toggleStory" :story_work="story_work" :active_stories="active_stories" :stories="active_stories" :showmode="show_mode" :positions="positions" :detaillevel="selected_level"work="1h" link="234" actual="0.5h":work_item='true' :done='true'><tick-display :done='true'></tick-display> &quot;Right to be Forgotten&quot; button on user profile page</wbs-item>
+<wbs-item v-on:register="registered" v-on:togglestory="toggleStory" :story_work="story_work" :active_stories="active_stories" :stories="active_stories" :showmode="show_mode" :positions="positions" :detaillevel="selected_level"work="1d":work_item='true' :done='true'><tick-display :done='true'></tick-display> Completed item (not linked to a story)</wbs-item>
+<wbs-item v-on:register="registered" v-on:togglestory="toggleStory" :story_work="story_work" :active_stories="active_stories" :stories="active_stories" :showmode="show_mode" :positions="positions" :detaillevel="selected_level"work="1d" link="123":work_item='true' :done='true'><tick-display :done='true'></tick-display> Records customer billing event</wbs-item>
+</ul>
+</wbs-item>
+<wbs-item v-on:register="registered" v-on:togglestory="toggleStory" :story_work="story_work" :active_stories="active_stories" :stories="active_stories" :showmode="show_mode" :positions="positions" :detaillevel="selected_level"new="true">Module C
+<ul>
+<wbs-item v-on:register="registered" v-on:togglestory="toggleStory" :story_work="story_work" :active_stories="active_stories" :stories="active_stories" :showmode="show_mode" :positions="positions" :detaillevel="selected_level"work="1d" link="345":work_item='true' :done='false'><tick-display :done='false'></tick-display> behavior X implemented</wbs-item>
+<wbs-item v-on:register="registered" v-on:togglestory="toggleStory" :story_work="story_work" :active_stories="active_stories" :stories="active_stories" :showmode="show_mode" :positions="positions" :detaillevel="selected_level">Database
+<ul>
+<wbs-item v-on:register="registered" v-on:togglestory="toggleStory" :story_work="story_work" :active_stories="active_stories" :stories="active_stories" :showmode="show_mode" :positions="positions" :detaillevel="selected_level"work="1d" link="345":work_item='true' :done='false'><tick-display :done='false'></tick-display> database table Y tracks user acceptance</wbs-item>
+</ul>
+</wbs-item>
+</ul>
+</wbs-item>
+<wbs-item v-on:register="registered" v-on:togglestory="toggleStory" :story_work="story_work" :active_stories="active_stories" :stories="active_stories" :showmode="show_mode" :positions="positions" :detaillevel="selected_level">Module D</wbs-item>
+<wbs-item v-on:register="registered" v-on:togglestory="toggleStory" :story_work="story_work" :active_stories="active_stories" :stories="active_stories" :showmode="show_mode" :positions="positions" :detaillevel="selected_level">Module E</wbs-item>
+</ul>
+</wbs-item>
+</ul>
+<h3>Administrative</h3>
+<ul>
+<wbs-item v-on:register="registered" v-on:togglestory="toggleStory" :story_work="story_work" :active_stories="active_stories" :stories="active_stories" :showmode="show_mode" :positions="positions" :detaillevel="selected_level">Administration
+<ul>
+<wbs-item v-on:register="registered" v-on:togglestory="toggleStory" :story_work="story_work" :active_stories="active_stories" :stories="active_stories" :showmode="show_mode" :positions="positions" :detaillevel="selected_level">MR (Merge Request)
+<ul>
+<wbs-item v-on:register="registered" v-on:togglestory="toggleStory" :story_work="story_work" :active_stories="active_stories" :stories="active_stories" :showmode="show_mode" :positions="positions" :detaillevel="selected_level">Submission
+<ul>
+<wbs-item v-on:register="registered" v-on:togglestory="toggleStory" :story_work="story_work" :active_stories="active_stories" :stories="active_stories" :showmode="show_mode" :positions="positions" :detaillevel="selected_level"work="0.5h" link="123":work_item='true' :done='false'><tick-display :done='false'></tick-display> <strong>123</strong> Merge Request created</wbs-item>
+</ul>
+</wbs-item>
+<wbs-item v-on:register="registered" v-on:togglestory="toggleStory" :story_work="story_work" :active_stories="active_stories" :stories="active_stories" :showmode="show_mode" :positions="positions" :detaillevel="selected_level">Code reviewed and updated
+<ul>
+<wbs-item v-on:register="registered" v-on:togglestory="toggleStory" :story_work="story_work" :active_stories="active_stories" :stories="active_stories" :showmode="show_mode" :positions="positions" :detaillevel="selected_level"work="0.5h" link="123":work_item='true' :done='false'><tick-display :done='false'></tick-display> <strong>123</strong> Merge Request updated and merged</wbs-item>
+</ul>
+</wbs-item>
+</ul>
+</wbs-item>
+<wbs-item v-on:register="registered" v-on:togglestory="toggleStory" :story_work="story_work" :active_stories="active_stories" :stories="active_stories" :showmode="show_mode" :positions="positions" :detaillevel="selected_level">Security Assessment</wbs-item>
+<wbs-item v-on:register="registered" v-on:togglestory="toggleStory" :story_work="story_work" :active_stories="active_stories" :stories="active_stories" :showmode="show_mode" :positions="positions" :detaillevel="selected_level">Threat Model updated</wbs-item>
+<wbs-item v-on:register="registered" v-on:togglestory="toggleStory" :story_work="story_work" :active_stories="active_stories" :stories="active_stories" :showmode="show_mode" :positions="positions" :detaillevel="selected_level">CR (Change Request)
+<ul>
+<wbs-item v-on:register="registered" v-on:togglestory="toggleStory" :story_work="story_work" :active_stories="active_stories" :stories="active_stories" :showmode="show_mode" :positions="positions" :detaillevel="selected_level">Submission</wbs-item>
+<wbs-item v-on:register="registered" v-on:togglestory="toggleStory" :story_work="story_work" :active_stories="active_stories" :stories="active_stories" :showmode="show_mode" :positions="positions" :detaillevel="selected_level">Approved and deployed</wbs-item>
+<wbs-item v-on:register="registered" v-on:togglestory="toggleStory" :story_work="story_work" :active_stories="active_stories" :stories="active_stories" :showmode="show_mode" :positions="positions" :detaillevel="selected_level">Validated in PRD
+<ul>
+<wbs-item v-on:register="registered" v-on:togglestory="toggleStory" :story_work="story_work" :active_stories="active_stories" :stories="active_stories" :showmode="show_mode" :positions="positions" :detaillevel="selected_level"work="0.75h" link="123":work_item='true' :done='false'><tick-display :done='false'></tick-display> <strong>123</strong> validated and tested in production</wbs-item>
+</ul>
+</wbs-item>
+</ul>
+</wbs-item>
+<wbs-item v-on:register="registered" v-on:togglestory="toggleStory" :story_work="story_work" :active_stories="active_stories" :stories="active_stories" :showmode="show_mode" :positions="positions" :detaillevel="selected_level">Announcements
+<ul>
+<wbs-item v-on:register="registered" v-on:togglestory="toggleStory" :story_work="story_work" :active_stories="active_stories" :stories="active_stories" :showmode="show_mode" :positions="positions" :detaillevel="selected_level"work="1d" link="123":work_item='true' :done='false'><tick-display :done='false'></tick-display> <strong>123</strong> Email announcing new feature created</wbs-item>
+<wbs-item v-on:register="registered" v-on:togglestory="toggleStory" :story_work="story_work" :active_stories="active_stories" :stories="active_stories" :showmode="show_mode" :positions="positions" :detaillevel="selected_level"work="0.25" link="123":work_item='true' :done='false'><tick-display :done='false'></tick-display> <strong>123</strong> Email announcing new feature sent</wbs-item>
+</ul>
+</wbs-item>
+</ul>
+</wbs-item>
+</ul>
+<h2>Raw Table Data</h2>
+<stories-table :story_work="story_work" :stories="active_stories"></stories-table>
+
+      </main>
+    </div>
+    
+<script type="text/x-template" id="bs-percentage-template">
+  <div class="total-progress" title="Percent Complete">
+    <div class="progress">
+      <div class="progress-bar" v-bind:class="classObject" v-bind:style="{ width: getPercent() + '%' }">{{ getPercent() }}%</div>
+    </div>
+  </div>
+</script>
+
+<script>
+  Vue.component("bs-percentage", {
+    template: "#bs-percentage-template",
+  
+    props: ['total', 'done'],
+    methods: {
+      getPercent: function() {
+        return Math.round(this.done / this.total * 100) || 0;
+      }
+    },
+    computed: {
+      classObject: function() {
+        return {
+          // show as "green/success" if > 95% complete
+          'progress-bar-success': this.getPercent() >= 95.0,
+        }
+      }
+    }
+  });
+</script>
+
+<script type="text/x-template" id="confidence-display-template">
+  <span v-bind:class="classObject" title="Level of confidence in estimate">{{displayValue()}}</span>
+</script>
+
+<script>
+  Vue.component("confidence-display", {
+    template: "#confidence-display-template",
+  
+    props: ['value'],
+    computed: {
+      classObject: function() {
+        return {
+          'confidence-display': true,
+          'text-success': this.valueBetween(90, 100),
+          'text-info': this.valueBetween(75, 89),
+          'text-warning': this.valueBetween(60, 74),
+          'text-danger': this.valueBetween(1, 59),
+          'text-muted': this.valueBetween(0, 0)
+        }
+      }
+    },
+    methods: {
+      valueBetween: function(low, high) {
+        return (this.$props.value >= low && this.$props.value <= high)
+      },
+      displayValue: function() {
+        var val = this.$props.value
+        if (_.isNumber(val) && val > 0) {
+          return val.toString() + "%"
+        }
+        else {
+          return "-"
+        }
+      }
+    }
+  });
+</script>
+
+<script type="text/x-template" id="detail-level-template">
+  <div class="detail-level">
+    <div class="btn-group" role="group" aria-label="Level of detail selection">
+      <button v-for="level in maxlevel" type="button"
+          class="btn btn-default"
+          v-bind:class="{ active: level == activeLevel }"
+          @click.stop="levelSelected(level)"
+          :title="buttonTitle(level)">
+        {{ level }}
+      </button>
+    </div>
+  </div>
+</script>
+
+<script>
+  Vue.component("detail-level", {
+    template: "#detail-level-template",
+  
+    props: ['maxlevel', 'selectedlevel'],
+    data: function() {
+      return {
+        activeLevel: this.$props.selectedlevel
+      }
+    },
+    watch: {
+      selectedlevel: function() {
+        this.activeLevel = this.$props.selectedlevel
+      }
+    },
+    methods: {
+      levelSelected: function(newLevel) {
+        this.activeLevel = newLevel
+        this.$emit("change", newLevel)
+      },
+      buttonTitle: function(level) {
+        return "Set level of detail to " + level
+      }
+    }
+  });
+</script>
+
+<script type="text/x-template" id="display-filter-template">
+  <div class="display-filter">
+    <div class="btn-group">
+      <button type="button" class="btn btn-default button-style-toggle dropdown-toggle"
+        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+        v-on:click="toggleActivated">
+        <i class="primary fa fa-filter" aria-hidden="true"></i>
+        <span class="direction-indicator">
+          <i v-show="!activated" class="fa fa-caret-down"></i>
+          <i v-show="activated" class="fa fa-caret-up"></i>
+        </span>
+      </button>
+    </div>
+    <span class="current-settings-text">{{ settingsText() }}</span>
+
+    <div class="options" v-show="activated">
+      <div class="display-filter">
+        <div class="radio">
+          <label>
+            <input type="radio" value="new-tracking" v-model="showMode">
+            New work
+          </label>
+        </div>
+        <div class="radio">
+          <label>
+            <input type="radio" value="existing-only" v-model="showMode">
+            Existing structure only
+          </label>
+        </div>
+        <div class="radio">
+          <label>
+            <input type="radio" value="show-all" v-model="showMode">
+            All
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+</script>
+
+<script>
+  Vue.component("display-filter", {
+    template: "#display-filter-template",
+  
+    props: ['showmode'],
+      data: function() {
+      return {
+        showMode: "new-tracking",
+        // button activated status
+        activated: false
+      }
+    },
+    watch: {
+      showmode: function() {
+        this.showMode = this.$props.showmode
+      },
+      showMode: function() {
+        // showMode just changed. Emit an event.
+        this.$emit("change", this.showMode)
+      }
+    },
+    computed: {
+      classObject: function () {
+        return {
+          'activated': this.activated
+        }
+      }
+    },
+    methods: {
+      settingsText: function() {
+        switch (this.showMode) {
+          case "new-tracking":
+            return "New work"
+          case "existing-only":
+            return "Existing structure only"
+          case "show-all":
+            return "All"
+          default:
+            return ""
+        }
+      },
+      toggleActivated: function() {
+        this.activated = !this.activated
+      }
+    }
+  });
+</script>
+
+<script type="text/x-template" id="display-style-template">
+  <div class="display-style">
+    <div class="btn-group">
+      <button type="button" class="btn btn-default button-style-toggle dropdown-toggle"
+        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+        v-on:click="toggleActivated">
+        <i class="primary fa fa-paint-brush" aria-hidden="true"></i>
+        <span class="direction-indicator">
+          <i v-show="!activated" class="fa fa-caret-down"></i>
+          <i v-show="activated" class="fa fa-caret-up"></i>
+        </span>
+      </button>
+    </div>
+    <span class="current-settings-text">{{ settingsText() }}</span>
+
+    <div class="options" v-show="activated">
+      <div class="radio">
+        <label>
+          <input type="radio" value="bullets" v-model="wbs">
+          Bullets
+        </label>
+      </div>
+      <div class="radio">
+        <label>
+          <input type="radio" value="numbered" v-model="wbs">
+          Numbered
+        </label>
+      </div>
+      <div class="checkbox">
+        <label>
+          <input type="checkbox" :true-value="true" :false-value="false" v-model="showColored">
+          Show colored deliverable checks
+        </label>
+      </div>
+      <div class="checkbox">
+        <label>
+          <input type="checkbox" :true-value="true" :false-value="false" v-model="showProgress">
+          Show progress
+        </label>
+      </div>
+      <div class="checkbox">
+        <label>
+          <input type="checkbox" :true-value="true" :false-value="false" v-model="showTotals">
+          Show totals
+        </label>
+      </div>
+    </div>
+  </div>
+</script>
+
+<script>
+  Vue.component("display-style", {
+    template: "#display-style-template",
+  
+    props: ['styleoptions'],
+      data: function() {
+      return {
+        showColored: true,
+        showProgress: true,
+        showTotals: true,
+        // wbs - "bullets" or "numbered"
+        wbs: "bullets",
+        // button activated status
+        activated: false
+      }
+    },
+    watch: {
+      styleoptions: function() {
+        this.showColored = _.get(this.$props.styleoptions, "colored", true)
+        this.showProgress = _.get(this.$props.styleoptions, "progress", true)
+        this.showTotals = _.get(this.$props.styleoptions, "totals", true)
+        this.wbs = _.get(this.$props.styleoptions, "wbs", "bullets")
+      },
+      wbs: function() { this.signalChange() },
+      showColored: function() { this.signalChange() },
+      showProgress: function() { this.signalChange() },
+      showTotals: function() { this.signalChange() }
+    },
+    computed: {
+      classObject: function () {
+        return {
+          'activated': this.activated
+        }
+      }
+    },
+    methods: {
+      signalChange: function() {
+        var newObj = {
+          wbs: this.wbs,
+          colored: this.showColored,
+          progress: this.showProgress,
+          totals: this.showTotals
+        }
+        this.$emit("change", newObj)
+      },
+      settingsText: function() {
+        var settings = []
+        settings.push(this.wbs)
+        // Colored setting
+        if (this.showColored) {
+          settings.push("colored checks")
+        }
+        else {
+          settings.push("plain checks")
+        }
+        // Progress setting
+        if (this.showProgress) {
+          settings.push("with progress")
+        }
+        // Totals setting
+        if (this.showTotals) {
+          settings.push("with totals")
+        }
+        return settings.join(", ")
+      },
+      toggleActivated: function() {
+        this.activated = !this.activated
+      }
+    }
+  });
+</script>
+
+<script type="text/x-template" id="invalid-story-panel-template">
+  <div v-if="shouldShow()" id="invalid-story-warning" class="panel panel-danger">
+    <div class="panel-heading">
+      Invalid Story Links
+    </div>
+    <div class="panel-body">
+      <p>
+        The following story link names were used that don't match an
+        existing story.
+      </p>
+
+      <ul class="text-danger">
+        <li v-for="name in invalid">{{ name }}</li>
+      </ul>
+
+      <p>
+        The work items will not show up because their story
+        cannot be "selected" for them to show their work.
+      </p>
+      <p>
+        You are looking for a work-item that links to an invalid story.
+      <pre>
+            {link="missing-story"}
+            {link=invalid}
+          </pre>
+      </p>
+    </div>
+  </div>
+</script>
+
+<script>
+  Vue.component("invalid-story-panel", {
+    template: "#invalid-story-panel-template",
+  
+    props: ['invalid'],
+    methods: {
+      shouldShow: function() {
+        return this.$props.invalid.length > 0
+      }
+    }
+  });
+</script>
+
+<script type="text/x-template" id="position-display-template">
+  <span class="position-display" @click="clicked">{{ displayText() }}</span>
+</script>
+
+<script>
+  Vue.component("position-display", {
+    template: "#position-display-template",
+  
+    props: ['position'],
+    template: '#position-display-template',
+    methods: {
+      displayText: function() {
+        var position = this.$props.position
+        // Convert a position array like [1, 1, 1, 2] into text like "1.1.1.2"
+        if (Array.isArray(position)) {
+          // if [1] => "1."
+          if (position.length == 1) {
+            return position[0] + "." // + ".0"
+          }
+          else {
+            // has more depth [1, 1, 2] => "1.1.2"
+            return position.join(".")
+          }
+        }
+        else {
+          return ""
+        }
+      },
+      clicked: function(event) {
+        this.$emit("click", event)
+      }
+    }
+  });
+</script>
+
+<script type="text/x-template" id="security-local-storage-template">
+  <div v-if="shouldShow()" id="security-storage-warning" class="panel panel-danger">
+    <div class="panel-heading">
+      Security Blocks LocalStorage Access
+    </div>
+    <div class="panel-body">
+      <p>
+        Some features are blocked due to browser security settings preventing
+        access to the browser's local storage. This is used to persist view
+        settings and selected stories after a browser refresh.
+      </p>
+
+      <p>
+        Please create an exception in the "Block third-party cookies and site
+        data" to allow that feature.
+      </p>
+    </div>
+  </div>
+</script>
+
+<script>
+  Vue.component("security-local-storage", {
+    template: "#security-local-storage-template",
+  
+    props: ['allowed'],
+    methods: {
+      shouldShow: function() {
+        return this.$props.allowed == false
+      }
+    }
+  });
+</script>
+
+<script type="text/x-template" id="stories-chart-template">
+  <div style="position: relative; width:100%;" v-bind:style="{ height: getHeight() + 'px' }">
+    <canvas id="stories-chart" ref="canvas"></canvas>
+  </div>
+</script>
+
+<script>
+  Vue.component("stories-chart", {
+    template: "#stories-chart-template",
+  
+    props: ['stories', 'story_work'],
+    mounted: function() {
+      this.chart = new Chart(this.$refs.canvas, {
+        type: 'horizontalBar',
+        data: {
+          labels: this.chartLabels,
+          datasets: this.chartDatasets
+        },
+        options: this.chartOptions()
+      });
+    },
+    data: function() {
+      return {
+        // setup in mounted()
+        chart: null,
+        chartLabels: [],
+        chartDatasets: []
+      }
+    },
+    watch: {
+      stories: function() {
+        this.chartLabels = this.$props.stories || []
+        if (this.chart) {
+          this.chart.data.labels = this.chartLabels;
+          this.chart.update();
+        }
+        this.updateDatasets()
+      },
+      story_work: function() {
+        this.updateDatasets()
+      }
+    },
+    methods: {
+      chartOptions: function() {
+        return {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            xAxes: [{
+              // stacked: true
+            }],
+            yAxes: [{
+              // stacked: true,
+              ticks: {
+                beginAtZero:true
+              }
+            }]
+          }
+        }
+      },
+      getHeight: function() {
+        // 3 bars show per story. 130px for 1 bar (includes legend and padding)
+        return 100 + (this.$props.stories.length * 30);
+      },
+      updateDatasets: function() {
+        var estimatedSet = [];
+        var doneSet = [];
+        var actualSet = [];
+        var _this = this;
+        _.forEach(_this.chartLabels, function(story) {
+          var storyList = _this.$props.story_work[story]
+          estimatedSet.push(_.sumBy(storyList, 'estimate.amount'))
+          doneSet.push(_.sumBy(_.filter(storyList, 'done'), 'estimate.amount'))
+          actualSet.push(_.sumBy(storyList, 'actual.amount'))
+        })
+        this.chartDatasets = [
+          {
+            label: 'hours estimated',
+            data: estimatedSet,
+            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+          },
+          {
+            label: 'hours done',
+            data: doneSet,
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1
+          },
+          {
+            label: 'hours actual',
+            data: actualSet,
+            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+            borderColor: 'rgba(255,99,132,1)',
+            borderWidth: 1
+          }
+        ]
+        if (this.chart) {
+          this.chart.data.datasets = this.chartDatasets
+          this.chart.update()
+        }
+      }
+    },
+    beforeDestroy () {
+      if (this.chart) {
+        this.chart.destroy()
+      }
+    }
+  });
+</script>
+
+<script type="text/x-template" id="stories-table-template">
+  <div class="story-table-data">
+    <a href="#" title="Toggle work item table display"
+       class="toggle-table-display"
+       @click.stop.prevent="toggleExpandTable">
+      <i class="fa fa-table" aria-hidden="true"></i>
+    </a>
+    <table class="table" v-show="tableExpanded">
+      <thead>
+      <tr>
+        <th>Date</th>
+        <th>Story</th>
+        <th>Work Est (h)</th>
+        <th>Actual (h)</th>
+        <th>Completed</th>
+        <th>Confidence (%)</th>
+        <th>Note</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr v-for="entry in dataset">
+        <td>{{ entry.date }}</td>
+        <td>{{ entry.story }}</td>
+        <td>{{ entry.work }}</td>
+        <td>{{ entry.actual }}</td>
+        <td>{{ entry.completed }}</td>
+        <td>{{ entry.confidence_pct }}</td>
+        <td>{{ entry.note }}</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</script>
+
+<script>
+  Vue.component("stories-table", {
+    template: "#stories-table-template",
+  
+    props: ['stories', 'story_work'],
+    data: function() {
+      return {
+        // setup in mounted()
+        dataset: [],
+        tableExpanded: false
+      }
+    },
+    watch: {
+      stories: function() {
+        this.updateDataset()
+      },
+      story_work: function() {
+        this.updateDataset()
+      }
+    },
+    methods: {
+      toggleExpandTable: function() {
+        this.tableExpanded = !this.tableExpanded
+      },
+      updateDataset: function() {
+        var m = new Date();
+        var dateString = m.getUTCFullYear() +"-"+ (m.getUTCMonth()+1) +"-"+ m.getUTCDate();
+        this.dataset = [];
+        var _this = this;
+        _.forEach(_this.$props.stories, function(story) {
+          _.forEach(_this.$props.story_work[story], function(work) {
+            _this.dataset.push({
+              date: dateString,
+              story: story,
+              work: work.estimate.amount,
+              actual: work.actual.amount,
+              completed: work.done,
+              confidence_pct: work.estimate.confidence / 100,
+              note: work.note
+            })
+          })
+        })
+      }
+    }
+  });
+</script>
+
+<script type="text/x-template" id="stories-toggle-template">
+  <div>
+    <a href="#" class="story-toggle-link" @click.stop.prevent="toggleStories">
+      <i class="fa fa-random"></i> Toggle story selection
+    </a>
+  </div>
+</script>
+
+<script>
+  Vue.component("stories-toggle", {
+    template: "#stories-toggle-template",
+  
+    methods: {
+      toggleStories: function() {
+        // emit the "toggle" event that the root component uses.
+        this.$emit("toggle")
+      }
+    }
+  });
+</script>
+
+<script type="text/x-template" id="stories-total-template">
+  <div class='stories-total-display'>
+    <span :title="nameTitleText()">{{ total_text }}:</span>
+    <confidence-display :value="total_confidence"></confidence-display>
+    <div class='work-total' :title="titleText()">
+      {{ total_estimated }}
+    </div>
+  </div>
+</script>
+
+<script>
+  Vue.component("stories-total", {
+    template: "#stories-total-template",
+  
+    props: ['stories', 'story_work', 'group', 'story_groups'],
+    data: function() {
+      return {
+        total_estimated_hours: null,
+        total_estimated: null,
+        total_text: "Total",
+        total_actual: null,
+        total_confidence: null,
+      }
+    },
+    watch: {
+      stories: function() {
+        var workSet = []
+        // if given a specific group, use that to limit the workSet
+        if (this.$props.group) {
+          var stories = this.$props.story_groups[this.$props.group]
+          workSet = _.flatten(_.values(_.pick(this.$props.story_work, stories)))
+        }
+        else {
+          // no group limit, take work for all active stories
+          workSet = _.flatten(_.values(this.$props.story_work))
+        }
+
+        var _this = this
+        // filter out any stories that are not active
+        workSet = _.filter(workSet, function(i) {
+          return _.includes(_this.$props.stories, i.for_story)
+        })
+        // further filter down to only the incomplete items
+        workSet = _.filter(workSet, {'done': false})
+        var estimatedWork = _.sumBy(workSet, 'estimate.amount') || 0
+        var actualWork    = _.sumBy(workSet, 'actual.amount') || 0
+        this.total_estimated_hours = estimatedWork
+        this.total_confidence = weightedConfidence(workSet)
+        this.total_estimated = workDisplay(estimatedWork)
+        this.total_actual = workDisplay(actualWork)
+        // If total represents a "group". Display as "Group Total"
+        if (this.$props.group) {
+          this.total_text = "Group Total"
+        }
+      }
+    },
+    methods: {
+      nameTitleText: function() {
+        if (this.$props.group) {
+          return this.$props.group;
+        }
+        else {
+          return null;
+        }
+      },
+      titleText: function() {
+        var totalHours = this.total_estimated_hours || 0
+        return "Estimated Time Remaining: " + totalHours.toString() + "h"
+      }
+    }
+  });
+</script>
+
+<script type="text/x-template" id="story-label-template">
+  <div class="story-label">
+    <span class="label-anchor">
+      <span v-bind:class="classObject">{{storyName}}</span>
+    </span>
+  </div>
+</script>
+
+<script>
+  Vue.component("story-label", {
+    template: "#story-label-template",
+  
+    props: ['story'],
+    computed: {
+      classObject: function () {
+        return {
+          'label': true,
+          'show-always': this.isUnlinked,
+          'label-danger': this.isUnlinked,
+          'label-primary': this.isLinked
+        }
+      },
+      isUnlinked: function() {
+        return _.isEmpty(this.$props.story) || this.$props.story == "null";
+      },
+      isLinked: function() {
+        return !this.isUnlinked;
+      },
+      storyName: function() {
+        if (this.isUnlinked) {
+          return "unlinked"
+        }
+        else {
+          return this.$props.story
+        }
+      }
+    }
+  });
+</script>
+
+<script type="text/x-template" id="tick-display-template">
+  <span>
+    <i v-if="done == false" class='fa task-indicator icon-left show-incomplete fa-square-o'></i>
+    <i v-if="done == true" class='fa task-indicator icon-left show-complete fa-check-square-o'></i>
+  </span>
+</script>
+
+<script>
+  Vue.component("tick-display", {
+    template: "#tick-display-template",
+  
+    props: ['done'],
+  });
+</script>
+
+<script type="text/x-template" id="wbs-item-template">
+  <li v-bind:class="classObject">
+    <span v-if="mode == 'story'">
+      <content>
+        <div class="checkbox">
+          <label>
+            <input type="checkbox" v-model="storyIncluded" @click="toggleIncludeStory">
+            <slot></slot>
+          </label>
+        </div>
+      </content>
+      <div class='story-work-display'>
+        <bs-percentage :total="getStoryTotalWork()" :done="getStoryWorkDone()"></bs-percentage>
+        <confidence-display :value="storyConfidence"></confidence-display>
+        <div class='work-total' title="Estimated Time Remaining" @click="toggleExpandStory">
+          {{ workRemainingDisplay() }}
+          <a href="#" class="toggle-story-details" @click.stop.prevent="toggleExpandStory">
+            <i v-show="!storyExpanded" class="fa fa-angle-up"></i>
+            <i v-show="storyExpanded" class="fa fa-angle-down"></i>
+          </a>
+        </div>
+      </div>
+      <div v-show="storyExpanded">
+        <p>
+          Estimated Remaining: {{ workRemainingDisplay() }}
+        </p>
+        <p>
+          Total Estimated: {{ workEstimateDisplay() }}
+        </p>
+        <p>
+          Confidence Level: {{storyConfidence}}%
+        </p>
+      </div>
+    </span>
+
+<!-- TODO: if an item is DONE, show the actual time (or estimated time if no actual set) -->
+
+    <span v-if="mode == 'work-item'">
+      <story-label :story="link"></story-label>
+      <position-display :position="position"></position-display>
+      <slot></slot>
+      <div v-if="user_work.estimate.amount > 0" class='work-amount pull-right' title="Estimated Time">
+        {{ workEstimateDisplay() }}
+      </div>
+      <div v-if="user_work.estimate.amount == 0" class='work-amount pull-right' title="Not Estimated">
+        <i class="fa fa-exclamation text-danger no-estimate-warning" aria-hidden="true"></i>
+      </div>
+      <div v-if="note" class='work-note pull-right' :title="note">
+        <i class="fa fa-sticky-note" aria-hidden="true"></i>
+      </div>
+    </span>
+
+    <span v-if="mode == 'none'">
+      <position-display :position="position" v-on:click.stop="toggleCollapsed"></position-display>
+      <span class="collapsed-toggle-display">
+        <i class="fa fa-plus-square-o" v-on:click.self.stop="toggleCollapsed"></i>
+      </span>
+      <content v-on:click.self.stop="toggleCollapsed">
+        <slot></slot>
+      </content>
+      <div class='sub-work-display' v-if="showProgress">
+        <bs-percentage :total="totals.totalWork" :done="totals.totalDone"></bs-percentage>
+        <div class='work-total pull-right' title="Estimated Time Remaining">
+          {{ workRemainingDisplay() }}
+        </div>
+      </div>
+    </span>
+  </li>
+</script>
+
+<script>
+  Vue.component("wbs-item", {
+    template: "#wbs-item-template",
+  
+    // declare the props
+    // - showmode - passed from root, showing "all", "new-basic", "new-tracking", or "existing-only"
+    // - new - flag passed for explicitly marking a non-work item as "new" so it can be filtered out on "existing-only" mode
+    // - done - "true" if flagged as complete
+    // - work - "1", "2"... passed as a string, represents hours of work
+    // - actual - Track reported actual work reported by user.
+    // - work_item - If a [ ] or [x] was used on the item, it is a work-item
+    // - link - string that connects a work-item to a story. Value is the story number.
+    // - story - string that labels a wbs-item as a story. Value is the story number.
+    // - active_stories - Array of story names/IDs that are checked and "active"
+    // - stories - Array of story numbers that selected for display
+    // - story_work - Array of objects that tracks total and done work for a story.
+    // - confidence - Explicitly set the level of confidence on a work-item.
+    // - note - User defined note that is tracked and output in table view (on work-item)
+    // - group - Attribute to help group stories together (only really applies to a story)
+    // - positions - An object hash that has the position for each item computed.
+    //          A position is a traditional WBS (e.g. 1.1.1.2) style numbering.
+    //          Comes in as an array of numbers. (ex [1, 1, 1, 2])
+    props: ['work_item', 'link', 'story', 'active_stories', 'stories',
+            'story_work', 'work', 'actual', 'showmode', 'new', 'done',
+            'confidence', 'note', 'group', 'positions', 'detaillevel'],
+    template: '#wbs-item-template',
+    data: function() {
+      // NOTE: props come in as strings unless explicitly bound to Vue like this...
+      // <wbs-item :work=3 :done=true story="123">Contents</wbs-item>
+      // Most of my "data" values are "computed" so they can process the input
+      // and I don't have to Regex HTML as much.
+      return {
+        storyIncluded: true,
+        storyExpanded: false,
+        childWork: [],
+        storyConfidence: 0,
+        collapsed: false,
+        position: []
+      }
+    },
+    watch: {
+      active_stories: function() {
+        // respond to being "included"
+        var value = _.includes(this.$props.active_stories, this.$props.story)
+        this.storyIncluded = value
+      },
+      stories: function() {
+        // NOTE: this watch doesn't fire on "story_work", which is what it should be.
+        //       That's an object though. It didn't work as a computed property
+        //       either because it only fired once and it wasn't the object with
+        //       values, it was an Observer with none of the values set.
+        var value = 0;
+        if (this.mode == "story") {
+          value = weightedConfidence(this.$props.story_work[this.$props.story])
+        }
+        this.storyConfidence = value
+      },
+      positions: function() {
+        // compute this item's position
+        if (_.isObject(this.$props.positions)) {
+          this.position = this.$props.positions[this.getId()] || []
+        }
+        else {
+          this.position = []
+        }
+      },
+      detaillevel: function() {
+        // The desired "level of detail" has changed. React and toggle
+        // appropriately. When expanded, then it is showing the "next" level of
+        // detail. So we need to evaluate the expand state using a -1 length.
+
+        // if collapsed and should be shown, toggle it.
+        var evalLevel = this.$props.detaillevel - 1
+        //
+        if (this.collapsed && this.position.length <= evalLevel) {
+          this.toggleCollapsed()
+        }
+        // if not collapsed, and should be hidden, toggle it
+        if (!this.collapsed && this.position.length > evalLevel) {
+          this.toggleCollapsed()
+        }
+      }
+    },
+    mounted: function() {
+      // When "mounted" event fires, all children are already mounted and available.
+      var list = [];
+      _.forEach(this.$children, function(child) {
+        list = _.concat(list, child.user_work, child.childWork)
+      })
+      this.childWork = _.compact(list)
+
+      // once mounted, fire event that registers this item with the root.
+      this.$emit("register", this)
+    },
+    computed: {
+      excludedByStorySelection: function() {
+        return this.getExcludedByStorySelection(this.$props.stories)
+      },
+      showProgress: function() {
+        // show the progress when not a story or work-item and has total to
+        // display. But don't show even then if showmode is for "existing-only"
+        var nonWorkItemAndHasWork = (this.mode == "none" && this.totals.totalWork > 0)
+        return nonWorkItemAndHasWork && this.$props.showmode != "existing-only";
+      },
+      classObject: function () {
+        return {
+          'wbs-item': true,
+          'story': this.mode == "story",
+          'task-parent': this.showProgress,
+          'show-tick': this.user_work,
+          'collapsed': this.collapsed,
+          // 'show-tick': !this.showProgress && this.user_work,
+          'hidden': !this.shouldShow()
+        }
+      },
+      unlinked: function() {
+        return (this.mode == "work-item") && (this.user_link == "null")
+      },
+      totals: function() {
+        var _this = this
+        var workForSelection = _.filter(this.childWork, function(work) {
+          return _this.includeForStories(_this.$props.stories, work)
+        })
+        return {
+          workItems: workForSelection,
+          // compute done from all self and all children. If ALL done the true.
+          done: _.every(workForSelection, {'done': true}),
+          // sum of all work items expressed in hours
+          totalWork: _.sumBy(workForSelection, 'estimate.amount') || 0,
+          totalDone: _.sumBy(_.filter(workForSelection, 'done'), 'estimate.amount') || 0,
+          totalRemaining: _.sumBy(_.filter(workForSelection, {'done': false}), 'estimate.amount') || 0,
+        }
+      },
+      mode: function() {
+        // if flagged as a "story", operate as that only
+        if (!_.isEmpty(this.$props.story)) {
+          return "story"
+        }
+        // if defines "work" or a "link" to a story, "work-item"
+        // Needs both to preserve an "unlinked" work item and a linked work
+        // item with no work estimate
+        if (this.$props.work_item) {
+          return "work-item"
+        }
+        return "none"
+      },
+      // Get the user_link value (ie. what the user said an item links to)
+      user_link: function() {
+        if (this.mode == "work-item") {
+          return _.isEmpty(this.$props.link) ? "null" : this.$props.link;
+        }
+        else {
+          return null;
+        }
+      },
+      // Get the user specified work estimate and recorded actual (if given)
+      user_work: function() {
+        if (this.mode == "work-item") {
+          var confidence = parseInt(this.$props.confidence) || null
+          var defaultAmount = 0
+          return {
+            for_story: this.user_link,
+            done: this.$props.done,
+            estimate: workEstimate(this.$props.work || "", defaultAmount, confidence),
+            actual: workActual(this.$props.actual || ""),
+            note: this.$props.note
+          }
+        }
+        else {
+          return null;
+        }
+      }
+    },
+    methods: {
+      getId: function() {
+        return this._uid
+      },
+      shouldShow: function() {
+        // always show a story
+        if (this.mode == "story") {
+          return true
+        }
+        if (this.mode == "work-item") {
+          // should show unless excluded by the current story selection
+          if (this.excludedByStorySelection) {
+            return false
+          }
+        }
+        // hide if set to "new-*" and does not define new work nor contain
+        // children that define work
+        if (this.$props.showmode == "new-basic" || this.$props.showmode == "new-tracking") {
+          // defines new work directly, has children define work, or explicitly set as "new"
+          return (this.user_work != null) || this.totals.workItems.length > 0 || this.$props.new == "true";
+        }
+        // hide if set to "existing-only" and defines new work
+        // show if "existing-only" and not defining new work of flagged as new
+        if (this.$props.showmode == "existing-only") {
+          return this.mode != "work-item" && this.$props.new != "true";
+        }
+        return true;
+      },
+      // Story: when a story's checkbox for inclusion is toggled, emit the event
+      toggleIncludeStory: function(_event) {
+        if (this.mode == "story") {
+          this.$emit("togglestory", this.$props.story)
+        }
+      },
+      // Story: when a story's drop-down/close-up chevron is clicked for exposing more details is toggled
+      toggleExpandStory: function(_event) {
+        if (this.mode == "story") {
+          this.storyExpanded = !this.storyExpanded
+        }
+      },
+      includeForStories: function(stories, work) {
+        // have a link and link is NOT included in what to display, return to exclude
+        return _.includes(stories, work.for_story);
+      },
+      getExcludedByStorySelection: function(storyList) {
+        if (this.mode == "work-item") {
+          // have a link and link is NOT included in what to display, return to exclude
+          return (!_.isEmpty(this.user_link) && !_.includes(storyList, this.user_link));
+        }
+        return false;
+      },
+      getStoryTotalWork: function() {
+        var data;
+        if (this.mode == "story") {
+          data = this.$props.story_work[this.$props.story]
+        }
+        else if(this.mode == "work-item") {
+          data = this.$props.story_work[this.$props.link]
+        }
+        return _.sumBy(data, 'estimate.amount') || 0
+      },
+      getStoryWorkDone: function() {
+        var data;
+        if (this.mode == "story") {
+          data = this.$props.story_work[this.$props.story]
+        }
+        else if(this.mode == "work-item") {
+          data = this.$props.story_work[this.$props.link]
+        }
+        return _.sumBy(_.filter(data, 'done'), 'estimate.amount') || 0
+      },
+      workEstimateDisplay: function() {
+        switch (this.mode) {
+          case "work-item":
+            if (this.user_work.estimate.amount == 0) {
+              return ''
+            }
+            else {
+              return this.user_work.estimate.display
+            }
+          case "story":
+            var storyWork = _.sumBy(this.story_work[this.story], 'estimate.amount') || 0
+            return workDisplay(storyWork)
+          case "none":
+            return workDisplayBest(this.totals.totalWork)
+          default:
+            return ""
+        }
+      },
+      workRemainingDisplay: function() {
+        switch (this.mode) {
+          case "work-item":
+            if (this.user_work.estimate.amount == 0) {
+              return ''
+            }
+            else {
+              return this.user_work.estimate.display
+            }
+          case "story":
+            var done_work = _.filter(this.story_work[this.story], {'done': false})
+            var storyWork = _.sumBy(done_work, 'estimate.amount') || 0
+            return workDisplay(storyWork)
+          case "none":
+            return workDisplayBest(this.totals.totalRemaining)
+          default:
+            return ""
+        }
+      },
+      toggleCollapsed: function() {
+        // Toggle the "collapsed" state of the item. Effect is applied in CSS.
+        // NOTE: A work-item has other children like <position-display>.
+        //       Only allow a toggle to collase/expand if there are additional
+        //       children.
+        if (this.$children.length >= 2) {
+          this.collapsed = !this.collapsed;
+        }
+      }
+    }
+  });
+</script>
+
+<script>// create a root instance
+new Vue({
+  el: '#vue-root',
+  data: {
+    // the template being used may not include a filter display component,
+    // provide a good default show_mode value.
+    show_mode: null,
+    style_display: {wbs: "bullets", progress: true, totals: true, colored: true},
+    active_stories: [],
+    story_work: {},
+    total_work: 0,
+    stories: [],
+    workItems: [],
+    story_groups: {},
+    invalid_story_links: [],
+    can_use_local_storage: false,
+    root_nodes: [],
+    positions: {},
+    max_level: 0,
+    selected_level: 0
+  },
+  mounted: function() {
+    this.can_use_local_storage = testLocalStorageAccess('lastDocId')
+    // Load lastDocId from localstorage. If something was loaded (failure to
+    // read returns a null). If found a previous ID and it is different from
+    // this report's document.
+    var lastDocId = safeGetLocalStorageItem("lastDocId", null)
+    if (lastDocId && reportConfig.document_id && lastDocId != reportConfig.document_id) {
+      deleteLocalStorageKeys(["stories", "selected_level", "filter_mode"])
+    }
+    this.saveToLocalStorage('lastDocId', reportConfig.document_id)
+
+    // get a list of stories
+    var totalStories = _.map(this.stories, 'story')
+
+    // load the persisted localStorage settings and try to apply them now.
+    //
+    // The root node is the last one to be mounted. Set the active_stories
+    // to all the stories once mounted if we can't load from previous.
+    // Triggers the items to evaluate their totals based on story inclusion.
+    //
+    // Intersect the loaded with what's valid for the report. Don't want invalid
+    // "active" stories.
+    var loadedStories = safeGetLocalStorageItem('stories', totalStories)
+    this.active_stories = _.intersection(totalStories, loadedStories)
+
+    // restore the saved "filter_mode" or "show_mode" if it exists. Otherwise
+    // the default is used.
+    this.show_mode = safeGetLocalStorageItem('filter_mode', "new-tracking")
+
+    // restore the saved "style_display" settings if it exists. Otherwise the
+    // default is used.
+    this.style_display = _.merge({}, safeGetLocalStorageItem('style_display', this.style_display))
+
+    // Now that the children are all setup, look for work items that link to
+    // a story that doesn't exist. If found, activate the display of an a
+    // warning at at the root Vue level.
+
+    // get a list of total work-item links
+    var totalLinks = _.compact(_.uniq(_.map(this.workItems, 'link')))
+    var missingStories = []
+    totalLinks.forEach(function(link) {
+      if (!_.includes(totalStories, link)) {
+        missingStories.push(link)
+      }
+    })
+    this.invalid_story_links = missingStories
+
+    // All items are mounted and registered.
+    // Start the numbering for the structure.
+    // Ensure "positions" is a new object
+    var positions = {}
+    this.root_nodes.forEach(function(child, index) {
+      computePositions(child, [index + 1], positions)
+    })
+    // set the positions to the newly computed object
+    this.positions = positions
+    // computed the greatest depth
+    var maxFound = computeMaxLevel(positions)
+    this.max_level = maxFound
+    // load the last saved "selected_level". File changes could make that invalid.
+    // If maxFound is less, use that.
+    var loadedSelectedLevel = safeGetLocalStorageItem('selected_level', maxFound)
+    if (maxFound < loadedSelectedLevel) {
+      this.selected_level = maxFound
+    }
+    else {
+      this.selected_level = loadedSelectedLevel
+    }
+  },
+  computed: {
+    classObject: function() {
+      return {
+        "mode-new-tracking": this.show_mode == "new-tracking",
+        "mode-existing": this.show_mode == "existing-only",
+        "mode-all": this.show_mode == "all",
+        "style-numbered": this.style_display["wbs"] == "numbered",
+        "style-bullets": this.style_display["wbs"] == "bullets",
+        "style-progress": this.style_display["progress"],
+        "style-totals": this.style_display["totals"],
+        "style-colored-checks": this.style_display["colored"]
+      }
+    }
+  },
+  methods: {
+    registered: function(child) {
+      // track stories
+      if (child.mode == "story") {
+        this.stories.push(child)
+        var storyList = this.story_groups[child.group] || []
+        this.story_groups[child.group] = _.concat(storyList, child.story)
+      }
+      // track work-items
+      if (child.mode == "work-item") {
+        this.workItems = _.concat(this.workItems, child)
+        this.addStoryWork(child.user_link, child.user_work, child.done)
+      }
+      // track top-level non-work items (new or existing structure) but not
+      // terminal elements
+      if (child.mode == "none") {
+        // if the parent vue element is this (the root) then it is a
+        // top-level "none" item.
+        if (child.$parent == this) {
+          this.root_nodes.push(child)
+        }
+      }
+    },
+    filterChanged: function(showMode) {
+      // user changed the active filter using the filter component.
+      // update the mode for display.
+      this.show_mode = showMode;
+      // record the "show_mode" under "filter_mode" in the localStorage.
+      this.saveToLocalStorage('filter_mode', this.show_mode)
+    },
+    styleChanged: function(options) {
+      // user changed the style options using the style component.
+      // update the options for display.
+      // create a new object to ensure no reference issues
+      this.style_display = _.merge({}, options)
+      // record the styles under "style_display" in the localStorage.
+      this.saveToLocalStorage('style_display', JSON.stringify(this.style_display))
+    },
+    levelChanged: function(newLevel) {
+      this.saveToLocalStorage('selected_level', newLevel)
+      this.selected_level = newLevel
+    },
+    addStoryWork: function(story, userWork, isDone) {
+      var storyData = this.story_work[story] || []
+      this.story_work[story] = _.concat(storyData, userWork)
+    },
+    toggleStory: function(story) {
+      // toggle a single story's active status (presence in the array)
+      var index = this.active_stories.indexOf(story)
+      if (index >= 0) {
+        // return new array excluding the removed item
+        // doing it this way to help Vue detect the array change
+        this.active_stories.splice(index, 1)
+        this.active_stories = this.active_stories
+      }
+      else {
+        // toggled but not included, find the index in the full set and
+        // insert at that position.
+        var storyIndex = _.findIndex(this.stories, function(s) {
+          return s.story == story
+        })
+        this.active_stories.splice(storyIndex, 0, story)
+        this.active_stories = this.active_stories
+      }
+      // store the story selection to localStorage so it persists for user.
+      this.saveToLocalStorage('stories', JSON.stringify(this.active_stories))
+    },
+    toggleAllStories: function() {
+      // loop through all the stories and toggle their active/checked state
+      var allNames = _.map(this.stories, "story")
+      var _this = this
+      _.forEach(this.stories, function(s) {
+        _this.toggleStory(s.story)
+      })
+    },
+    saveToLocalStorage: function(key, value) {
+      if (this.can_use_local_storage) {
+        localStorage.setItem(key, value)
+      }
+      else {
+        console.warn("Unable to write " + key + " to local storage. Value:", value)
+      }
+    }
+  }
+});
+
+// Convert a work estimate like "1w" to an object structure where the value
+// is converted to the lowest unit (hours) and the confidence is assigned.
+// "confidence" is an explicit confidence value if set by the user.
+// The confidence value is used if provided, otherwise a default value is
+// computed.
+function workEstimate(value, defaultAmount, confidence) {
+  // regex supports fractional hours "5", "3h", "2.5d"
+  var matches = value.match(/(\d+\.?\d*)([h|d|w|m]?)/i)
+  var workAmount = defaultAmount
+  var workUnit = reportConfig.defaultWorkUnit
+  // if found the 2 parts (original text plus the 2 captures)
+  if (matches && matches.length == 3) {
+    workAmount = _.toNumber(matches[1]);
+    if (!_.isEmpty(matches[2])) {
+      workUnit = matches[2]
+    }
+  }
+  return {
+    display: workAmount.toString() + workUnit,
+    user_unit: workUnit.toLowerCase(),
+    amount: workAmount * reportConfig.unitConversion[workUnit],
+    confidence: confidence || reportConfig.workUnitConfidencePct[workUnit]
+  }
+}
+
+// Convert an "actual" estimate like "3.5h" to an object structure where the
+// value is converted to the lowest unit (hours). Same as `workEstimate`
+// but without the confidence percent.
+function workActual(value) {
+  // use workEstimate, default missing amount to 0
+  var est = workEstimate(value, 0)
+  return _.omit(est, ['confidence'])
+}
+
+// Display the amount in hours to a "best fit" unit for showing total
+// estimated work time
+function workDisplayBest(amountHours) {
+  // Cycle through the unitConversions and stop at the "best" fit.
+  // Best is when it is >= 1
+  // Start with what we were given. Could be a fractional hour like 0.25h which
+  // would already be the best.
+  var bestFit = {amount: amountHours, unit: "h"}
+
+  // Convert the object in arrays. Ex: [["d", 6], ["h", 1]]
+  var pairs = _.toPairs(reportConfig.unitConversion)
+  // sort by the numeric value. Order of the keys can be alphabetical.
+  var unitConversions = _.sortedUniqBy(pairs, function(a) { return a[1]})
+
+  _.forEach(unitConversions, function(pair) {
+    var [unit, conversionAmount] = pair
+    var testAmount = (amountHours / conversionAmount).toPrecision(2)
+    if (testAmount >= 1.0) {
+      bestFit["amount"] = testAmount
+      bestFit["unit"] = unit
+    }
+  })
+  return bestFit.amount.toString() + bestFit.unit.toString()
+}
+
+// Compute the weighted average for the confidence values for a story.
+function weightedConfidence(storyWork) {
+  // computed the weighted average for the confidence value.
+  // takes the amount of work at it's level of confidence compared to total work.
+  // https://en.wikipedia.org/wiki/Weighted_arithmetic_mean
+  // (item1.amount * item1.confidence) + (item2.amount * item2.confidence) / (item1.amount + item2.amount)
+
+  var numerator = _.sumBy(storyWork, function(work) { return work.estimate.amount * work.estimate.confidence })
+  var denominator = _.sumBy(storyWork, 'estimate.amount')
+  if (denominator <= 0)
+    denominator = 1;
+  return Math.round(numerator / denominator)
+}
+
+// Get the display text for showing an amount of work
+function workDisplay(workAmount) {
+  if (workAmount == 0) {
+    return "-"
+  }
+  else {
+    return workDisplayBest(workAmount)
+  }
+}
+
+// Test if localStorage can be accessed. Returns a boolean.
+function testLocalStorageAccess(key) {
+  try {
+    localStorage.getItem(key)
+    return true
+  } catch (e) {
+    console.error("Blocked from using localStorage")
+    return false
+  }
+}
+
+// Attempt to read from local storage. If blocked or a value isn't present,
+// return the fallback. Logs that it was blocked.
+function safeGetLocalStorageItem(key, fallback) {
+  var rawData = null;
+  try {
+    // Try to read from local storage.
+    // Could fail from browser security setting.
+    rawData = localStorage.getItem(key)
+    try {
+      // Can read from local storage, try converting the value from JSON.
+      // If it fails (ie. wasn't serialized), just use the value we received.
+      return JSON.parse(rawData) || fallback
+    } catch {
+      // Failed to convert from JSON. Just return the value as-is. Could
+      // just be a string.
+      return rawData
+    }
+  } catch (e) {
+    console.error(e)
+    console.error("Blocked from using localStorage")
+    console.log("returning fallback", fallback)
+    return fallback
+  }
+}
+
+/**
+ * Delete the specified keys from localstorage.
+ * @param {Array} keys  Array of key names to delete
+ */
+function deleteLocalStorageKeys(keys) {
+  try {
+    _.forEach(keys, function(key) {
+      localStorage.removeItem(key)
+    });
+  } catch (e) {
+    console.error("Blocked from using localStorage")
+  }
+}
+
+// Uses dirty mutable objects to build out the entries on the positions hash
+// object.
+function computePositions(node, position, positions) {
+  // record the node's position in the hash
+
+  positions[node.getId()] = position
+  // NOTE: $children includes non-work-item children. Filter to the list
+  // of only wbs-item children
+  var workItemChildren = _.filter(node.$children, function(child) {
+    return child.$vnode.componentOptions["tag"] == "wbs-item"
+  })
+  // recursively compute the positions this node's children
+  workItemChildren.forEach(function(child, index) {
+    computePositions(child, position.concat(index + 1), positions)
+  })
+}
+
+// Given an object with ID's and position arrays, we want to get all the arrays
+// and find the longest one. That is the max depth.
+function computeMaxLevel(positionsData) {
+  // We've already computed an array for each work-item that has it's number
+  // for WBS numbering structure. Now just find the longest of those arrays.
+  // _.values() returns an array of arrays.
+  var values = _.values(positionsData)
+  return _.reduce(values, function(acc, numArray) {
+    // if this array is longer than the longest we've seen so far, return that
+    // length
+    var currLength = numArray.length
+    if (currLength > acc) {
+      return currLength
+    }
+    else {
+      return acc
+    }
+  }, 0)
+}
+</script>
+
+  
+    <footer>
+      <p>Powered by <a href="https://github.com/brainlid/wbs_markdown" target="_blank">wbs-markdown</a></p>
+    </footer>
+  </body>
+</html>
