@@ -519,17 +519,25 @@ If the user asks for a new task, always reply with an UPDATE_PROJECT: block cont
 
 IMPORTANT: When responding to the user, **never** include internal identifiers, database IDs (like TaskID: ...), or technical details about the data structure. Refer to tasks only by their titles or names, and use human-readable dates.
 
-IMPORTANT: When the user asks for a new task, always respond with an UPDATE_PROJECT: block that contains valid JSON like this:
+IMPORTANT: Only reply with an UPDATE_PROJECT block when the user explicitly requests to add a task or when their message clearly describes an action that should be tracked as a project task.
+
+Do NOT create a task if the user is asking a general question, making small talk, or discussing unrelated topics.
+
+Only respond with UPDATE_PROJECT if the user says things like “Add a task”, “Let’s work on…”, “I want to do…”, or describes an actionable step with a clear deliverable.
+
+
+When you do include an UPDATE_PROJECT block, follow this structure:
 
 UPDATE_PROJECT: {
   "newTasks": [
     {
-      "title": "Your task title",
-      "dueDate": "2025-06-01",
+      "title": "Write introduction section of the report",
+      "dueDate": "2025-06-10",
       "phase": "Planning"
     }
   ]
 }
+
 
 Make sure the JSON is valid and does not contain commentary or nested section headers like “Tasks in Current Phase:”. Do not use “TaskName” or “Due Date” — use “title”, “dueDate”, and “phase”.
 `;
