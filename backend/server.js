@@ -584,14 +584,12 @@ IMPORTANT: When responding to the user, **never** include internal identifiers, 
                 friendlyMsg = '\n\nYour tasks have been added to the project.';
             }
             displayResponse = displayResponse.split('UPDATE_PROJECT:')[0].trim();
-            // Remove trailing preamble if present
-            displayResponse = displayResponse.replace(/Here is the updated project block:?$/i, '').trim();
-            if (friendlyMsg) displayResponse += friendlyMsg;
-            // Fallback if displayResponse is empty
-            if (!displayResponse) {
-                displayResponse = "Sorry, I couldn't process your request right now. Please try again in a moment!";
+
+            if (!displayResponse && friendlyMsg) {
+                displayResponse = friendlyMsg.trim();
+            } else if (!displayResponse) {
+                displayResponse = "Got it! Your project was updated successfully.";
             }
-        }
 
         // Store AI's response (cleaned)
         await ChatMessage.create({
