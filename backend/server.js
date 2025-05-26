@@ -522,19 +522,29 @@ IMPORTANT: When responding to the user, **never** include internal identifiers, 
         const response = await axios.post(
             'https://api.openai.com/v1/chat/completions',
             {
-                model: 'gpt-4',
-                messages: [
-                    { role: 'system', content: systemPrompt },
-                    { role: 'user', content: message }
-                ]
+            model: 'gpt-4',
+            messages: [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: message }
+            ]
             },
             {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
-                }
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+            }
             }
         );
+        
+        //Token usage logging
+        const usage = response.data.usage;
+        if (usage) {
+            console.log("🔍 Token usage:");
+            console.log("  Prompt tokens:", usage.prompt_tokens);
+            console.log("  Completion tokens:", usage.completion_tokens);
+            console.log("  Total tokens:", usage.total_tokens);
+        }
+  
 
         let aiResponse = response.data.choices[0].message.content;
         
@@ -612,8 +622,16 @@ IMPORTANT: When responding to the user, **never** include internal identifiers, 
         res.json({ reply: displayResponse });
 
     } catch (error) {
-        console.error('Error:', error.response ? error.response.data : error.message);
-        res.status(500).json({ error: 'Something went wrong' });
+        if (error.response) {
+            console.error('OpenAI API error:', error.response.status);
+            console.error('Error details:', error.response.data);
+        
+            const errMessage = error.response.data?.error?.message || 'OpenAI API error';
+            res.status(500).json({ error: `OpenAI API error: ${errMessage}` });
+        } else {
+            console.error('Unexpected error:', error.message);
+            res.status(500).json({ error: `Unexpected error: ${error.message}` });
+        }        
     }
 });
 
