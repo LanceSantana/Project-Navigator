@@ -88,7 +88,7 @@ export async function generateGantt(viewMode = 'Month', filters = {}) {
     const filterControls = document.createElement('div');
     filterControls.className = 'gantt-filters';
     filterControls.innerHTML = `
-      <select id="viewMode" onchange="updateGanttView()">
+      <select id="viewMode">
         <option value="Month" ${viewMode === 'Month' ? 'selected' : ''}>Monthly View</option>
         <option value="Week" ${viewMode === 'Week' ? 'selected' : ''}>Weekly View</option>
         <option value="Day" ${viewMode === 'Day' ? 'selected' : ''}>Daily View</option>
@@ -126,40 +126,79 @@ export async function generateGantt(viewMode = 'Month', filters = {}) {
 
     // Initialize Gantt chart in the new div
     console.log('[Gantt] Rendering chart with data:', data.ganttData);
-    const gantt = new Gantt("#ganttChart", data.ganttData, {
-      header_height: 50,
-      column_width: 30,
-      step: 24,
-      view_mode: viewMode,
-      bar_height: 20,
-      bar_corner_radius: 3,
-      arrow_curve: 5,
-      padding: 18,
-      view_modes: ['Quarter Day', 'Half Day', 'Day', 'Week', 'Month'],
-      custom_popup_html: null,
-      on_click: function(task) {
-        // Handle task click for detailed view
-        if (task.type === 'group') {
-          // Toggle detailed view for the group
-          const tasks = data.ganttData.filter(t => t.parent === task.id);
-          tasks.forEach(t => {
-            t.hidden = !t.hidden;
-          });
-          gantt.refresh(tasks);
+
+    // Convert date strings to Date objects and ensure all required properties
+    const processedData = data.ganttData.map(task => {
+        // Ensure all required properties are present
+        const processedTask = {
+            id: task.id || `task-${Math.random().toString(36).substr(2, 9)}`,
+            name: task.name || 'Untitled Task',
+            start: new Date(task.start),
+            end: new Date(task.end),
+            progress: task.progress || 0,
+            type: task.type || 'task',
+            hideChildren: task.hideChildren || false,
+            // Add these properties to ensure compatibility
+            custom_class: task.type === 'group' ? 'group-task' : 'normal-task',
+            dependencies: task.dependencies || []
+        };
+
+        // Add parent if it exists
+        if (task.parent) {
+            processedTask.parent = task.parent;
         }
-      }
+
+        return processedTask;
     });
 
-    // Add the updateGanttView function to window scope
-    window.updateGanttView = function() {
-      const newViewMode = document.getElementById('viewMode').value;
-      const phaseFilter = document.getElementById('phaseFilter').value;
-      const sprintFilter = document.getElementById('sprintFilter').value;
-      
-      generateGantt(newViewMode, {
-        phase: phaseFilter,
-        sprint: sprintFilter
-      });
+    // Log the processed data for debugging
+    console.log('[Gantt] Processed data:', processedData);
+
+    // Create the Gantt chart with more specific configuration
+    const gantt = new Gantt("#ganttChart", processedData, {
+        header_height: 50,
+        column_width: 30,
+        step: 24,
+        view_mode: viewMode,
+        bar_height: 20,
+        bar_corner_radius: 3,
+        arrow_curve: 5,
+        padding: 18,
+        view_modes: ['Quarter Day', 'Half Day', 'Day', 'Week', 'Month'],
+        custom_popup_html: null,
+        language: 'en',
+        on_click: function(task) {
+            if (task.type === 'group') {
+                const tasks = processedData.filter(t => t.parent === task.id);
+                tasks.forEach(t => {
+                    t.hidden = !t.hidden;
+                });
+                gantt.refresh(tasks);
+            }
+        },
+        on_date_change: function(task, start, end) {
+            console.log('Date changed:', task, start, end);
+        },
+        on_progress_change: function(task, progress) {
+            console.log('Progress changed:', task, progress);
+        }
+    });
+
+    // Add a function to handle view mode changes
+    window.changeViewMode = function(mode) {
+        try {
+            gantt.change_view_mode(mode);
+        } catch (error) {
+            console.error('Error changing view mode:', error);
+            // Fallback to regenerating the chart
+            generateGantt(mode, {});
+        }
+    };
+
+    // Update the view mode select handler
+    document.getElementById('viewMode').onchange = function() {
+        const newMode = this.value;
+        window.changeViewMode(newMode);
     };
   } catch (err) {
     console.error('[Gantt] Error during generation:', err);
