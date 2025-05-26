@@ -544,7 +544,15 @@ IMPORTANT: When responding to the user, **never** include internal identifiers, 
             console.log("  Completion tokens:", usage.completion_tokens);
             console.log("  Total tokens:", usage.total_tokens);
         }
-  
+
+        console.log("🧠 Full OpenAI response:", JSON.stringify(response.data, null, 2));
+
+        if (!response.data.choices || !response.data.choices[0]) {
+            console.warn("⚠️ No valid choices in response");
+        } else {
+            console.log("✅ First choice message:", response.data.choices[0].message);
+        }
+
 
         let aiResponse = response.data.choices[0].message.content;
         
