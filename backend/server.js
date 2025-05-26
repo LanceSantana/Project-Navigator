@@ -558,11 +558,10 @@ IMPORTANT: When responding to the user, **never** include internal identifiers, 
         
         // Remove UPDATE_PROJECT block from the AI response before sending to the user and before saving to the database
         let displayResponse = aiResponse;
+        
         if (displayResponse.includes('UPDATE_PROJECT:')) {
-            // Try to extract the new tasks for a friendly confirmation
             let friendlyMsg = '';
             try {
-                // Try to parse the block for both 'tasks' and 'newTasks' keys
                 let updateJson = null;
                 const match = displayResponse.match(/UPDATE_PROJECT:\s*({[\s\S]+})/);
                 if (match) {
@@ -580,18 +579,18 @@ IMPORTANT: When responding to the user, **never** include internal identifiers, 
                     friendlyMsg = `\n\nThe following tasks have been added to your project: ${taskNames}.`;
                 }
             } catch (e) {
-                // fallback: generic confirmation
                 friendlyMsg = '\n\nYour tasks have been added to the project.';
             }
+        
             displayResponse = displayResponse.split('UPDATE_PROJECT:')[0].trim();
-
+        
             if (!displayResponse && friendlyMsg) {
                 displayResponse = friendlyMsg.trim();
             } else if (!displayResponse) {
                 displayResponse = "Got it! Your project was updated successfully.";
             }
+        }        
 
-        // Store AI's response (cleaned)
         await ChatMessage.create({
             userId: req.user.userId,
             projectId,
