@@ -517,7 +517,22 @@ Here is the current project context: ${projectContext}
 
 If the user asks for a new task, always reply with an UPDATE_PROJECT: block containing the new task, with your best guess for phase and due date. If the user is vague, infer reasonable values.
 
-IMPORTANT: When responding to the user, **never** include internal identifiers, database IDs (like TaskID: ...), or technical details about the data structure. Refer to tasks only by their titles or names, and use human-readable dates.`;
+IMPORTANT: When responding to the user, **never** include internal identifiers, database IDs (like TaskID: ...), or technical details about the data structure. Refer to tasks only by their titles or names, and use human-readable dates.
+
+IMPORTANT: When the user asks for a new task, always respond with an UPDATE_PROJECT: block that contains valid JSON like this:
+
+UPDATE_PROJECT: {
+  "newTasks": [
+    {
+      "title": "Your task title",
+      "dueDate": "2025-06-01",
+      "phase": "Planning"
+    }
+  ]
+}
+
+Make sure the JSON is valid and does not contain commentary or nested section headers like “Tasks in Current Phase:”. Do not use “TaskName” or “Due Date” — use “title”, “dueDate”, and “phase”.
+`;
 
         const response = await axios.post(
             'https://api.openai.com/v1/chat/completions',
