@@ -102,6 +102,8 @@
   <div id="snackbar" style="display: none;"></div>
 
   <script>
+    const API_URL = "https://project-navigator-gzq4.onrender.com";
+
     async function loadProjects() {
       const token = localStorage.getItem("jwt");
       if (!token) {
@@ -110,7 +112,7 @@
       }
 
       try {
-        const response = await fetch("http://localhost:3000/projects", {
+        const response = await fetch(`${API_URL}/projects`, {
           headers: { Authorization: `Bearer ${token}` }
         });
 
@@ -144,7 +146,7 @@
       if (!token || !projectId) return;
 
       try {
-        const response = await fetch(`http://localhost:3000/chat-history/${projectId}`, {
+        const response = await fetch(`${API_URL}/chat-history/${projectId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (!response.ok) throw new Error("Failed to load chat history");
@@ -210,7 +212,7 @@
       }
   
       try {
-        const response = await fetch("http://localhost:3000/", {
+        const response = await fetch(`${API_URL}/projects`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -246,7 +248,7 @@
       if (!confirmDelete) return;
 
       try {
-        const response = await fetch(`http://localhost:3000/projects/${projectId}`, {
+        const response = await fetch(`${API_URL}/projects/${projectId}`, {
           method: "DELETE",
           headers: {
             "Authorization": `Bearer ${localStorage.getItem("jwt")}`
@@ -285,7 +287,7 @@
       formData.append("projectId", projectId);
 
       try {
-        const response = await fetch("http://localhost:3000/upload-pdf", {
+        const response = await fetch(`${API_URL}/upload-pdf`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`
@@ -312,7 +314,7 @@
       if (!confirmDelete) return;
   
       try {
-        const response = await fetch(`http://localhost:3000/projects/${projectId}`, {
+        const response = await fetch(`${API_URL}/projects/${projectId}`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('jwt')}`
@@ -361,7 +363,7 @@
       chatBox.scrollTop = chatBox.scrollHeight;
 
       try {
-        const response = await fetch("http://localhost:3000/chat", {
+        const response = await fetch(`${API_URL}/chat`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

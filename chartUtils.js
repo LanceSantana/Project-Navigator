@@ -1,6 +1,6 @@
 // chartUtils.js
 
-export const API_URL = "https://project-navigator-gzq4.onrender.com";
+const API_URL = "https://project-navigator-gzq4.onrender.com";
 export let currentChart = '';
 
 export function switchToChart(type) {
