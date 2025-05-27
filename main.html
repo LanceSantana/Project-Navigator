@@ -41,6 +41,8 @@
     <div class="view-toggle">
       <button class="button" onclick="switchToChart('gantt')">View Gantt Chart</button>
       <button class="button" onclick="switchToChart('wbs')">View WBS</button>
+      
+
     </div>
 
     <div class="project-section">
@@ -76,15 +78,16 @@
       <div id="chartContainer" style="margin-top: 20px;"></div>
     </div>
 
-    <div id="newProjectForm" class="form-container" style="display: none;">
-      <h2>Create New Project</h2>
-      <input type="text" id="projectName" placeholder="Project Name">
-      <textarea id="projectDescription" placeholder="Project Description"></textarea>
-      <div class="form-buttons">
-        <button onclick="createProject()">Create</button>
-        <button onclick="document.getElementById('newProjectForm').style.display = 'none'">Cancel</button>
-      </div>
-    </div>
+<div id="newProjectForm" class="form-container" style="display: none;">
+  <h2>Create New Project</h2>
+  <input type="text" id="projectName" placeholder="Project Name">
+  <textarea id="projectDescription" placeholder="Project Description"></textarea>
+  <div class="form-buttons">
+    <button onclick="createProject()">Create</button>
+    <button onclick="document.getElementById('newProjectForm').style.display = 'none'">Cancel</button>
+  </div>
+</div>
+
 
     <div class="container">
       <div class="chat-box" id="chatBox"></div>
@@ -97,11 +100,14 @@
         </div>
       </div>
     </div>
+    <button id="logoutBtn" class="logout-button">Logout</button>
+
   </div>
 
   <div id="snackbar" style="display: none;"></div>
 
   <script>
+    const isGuest = localStorage.getItem("guestMode") === "true";
     const API_URL = "https://project-navigator-gzq4.onrender.com";
 
     async function loadProjects() {
@@ -176,13 +182,25 @@
       localStorage.setItem("currentProjectId", projectId);
       if (projectId) loadChatHistory();
     });
+      </script>
 
+<script>
     window.addEventListener("DOMContentLoaded", () => {
       loadProjects();
+      renderHistoryList();  
       // Add click handler for new project button
       document.getElementById('newProjectBtn').addEventListener('click', () => {
         document.getElementById('newProjectForm').style.display = 'block';
       });
+      document.getElementById('deleteProjectBtn').addEventListener('click', deleteProject);
+      document.getElementById('sendButton').addEventListener('click', sendMessage);
+      document.getElementById('pdfInput').addEventListener('change', uploadPDF);
+      
+      document.getElementById("createProjectBtn").addEventListener("click", createProject);
+      document.getElementById("logoutBtn").addEventListener("click", logout);
+
+      
+      renderHistoryList(); //might need to move this NOTICE
     });
   </script>
 
@@ -200,6 +218,22 @@
 
 <script>
     async function createProject() {
+      //guest
+    const isGuest = localStorage.getItem("guestMode") === "true";
+
+      if (isGuest) {
+        const existing = document.querySelectorAll("#projectSelect option:not([value=''])");
+        if (existing.length >= 3) {
+          showSnackbar("Guest limit: Max 3 projects");
+          return;
+        }
+      }
+
+      const token = localStorage.getItem("jwt");
+      if (!token && !isGuest) return;
+      //guest
+
+      
       const token = localStorage.getItem("jwt");
       if (!token) return;
   
@@ -361,6 +395,73 @@
 
       document.getElementById("userInput").value = '';
       chatBox.scrollTop = chatBox.scrollHeight;
+// history ("add below")
+
+function saveConversation(convo) {
+  const currentProjectId = localStorage.getItem('currentProjectId');
+  if (!currentProjectId) return;
+
+  const historyKey = `chatHistory_${currentProjectId}`;
+  let history = JSON.parse(localStorage.getItem(historyKey)) || [];
+
+  if (isGuest && history.length >= 3) {
+    history.pop(); // remove oldest
+  }
+
+  history.unshift(convo);
+  if (history.length > 20) history.pop();
+  localStorage.setItem(historyKey, JSON.stringify(history));
+  renderHistoryList();
+}
+
+function logout() {
+  localStorage.removeItem("jwt");
+  localStorage.removeItem("currentProjectId");
+  localStorage.removeItem("guestMode");
+  window.location.href = "index.html";
+}
+
+
+function renderHistoryList() {
+  const historyList = document.getElementById('historyList');
+  historyList.innerHTML = '';
+  const currentProjectId = localStorage.getItem('currentProjectId');
+  if (!currentProjectId) return;
+
+  const historyKey = `chatHistory_${currentProjectId}`;
+  const history = JSON.parse(localStorage.getItem(historyKey)) || [];
+  const maxLength = 30;
+
+  history.forEach(item => {
+    const li = document.createElement('li');
+    const a = document.createElement('a');
+    a.href = '#';
+    let displayText = item.title || (item.messages && item.messages[0]?.text) || 'Untitled';
+    if (displayText.length > maxLength) {
+      displayText = displayText.substring(0, maxLength) + '...';
+    }
+    a.textContent = displayText;
+    a.title = displayText;
+    a.addEventListener('click', () => {
+      loadConversation(item);
+    });
+    li.appendChild(a);
+    historyList.appendChild(li);
+  });
+}
+
+function loadConversation(convo) {
+  const chatBox = document.getElementById('chatBox');
+  chatBox.innerHTML = '';
+  convo.messages.forEach(msg => {
+    const div = document.createElement('div');
+    div.className = `message ${msg.isUser ? 'user' : 'bot'}`;
+    div.textContent = msg.text;
+    chatBox.appendChild(div);
+  });
+}
+//end of history
+
 
       try {
         const response = await fetch(`${API_URL}/chat`, {
@@ -376,6 +477,15 @@
 
         const data = await response.json();
         botDiv.textContent = data.reply; // Replace "Loading..." with actual response
+      saveConversation({
+          title: message.slice(0, 20),
+          projectId,
+          messages: [
+            { text: message, isUser: true },
+            { text: data.reply || "No response", isUser: false }
+          ]
+        });
+      
       } catch (err) {
         console.error(err);
         botDiv.textContent = "Error: Failed to get response.";
@@ -388,6 +498,9 @@
       const projectId = document.getElementById('projectSelect').value;
       document.getElementById('deleteProjectBtn').disabled = !projectId;
     });
+  window.createProject = createProject;
+  window.logout = logout;
+ 
   </script>
   </body>
   </html>
