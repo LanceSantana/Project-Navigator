@@ -481,34 +481,41 @@ app.post('/generate-wbs', authenticateToken, async (req, res) => {
       }
     });
 
-    // Convert tasks to WBS format
+    // Convert tasks to WBS format (hierarchical tree structure)
     const wbsData = [];
     let taskId = 1;
 
     // Add phase groups as parent nodes
     Object.entries(phaseGroups).forEach(([phase, phaseTasks]) => {
       const groupId = `phase-${phase}`;
+      
+      // Calculate phase-level statistics
+      const phaseProgress = phaseTasks.length > 0 ? 
+        Math.round(phaseTasks.reduce((sum, task) => sum + (task.status === 'Done' ? 100 : task.status === 'In Progress' ? 50 : 0), 0) / phaseTasks.length) : 0;
+      
+      const phaseWorkEstimate = phaseTasks.reduce((sum, task) => sum + (task.workEstimate || 0), 0);
+
       wbsData.push({
         id: groupId,
         parent: null,
         text: phase,
         type: 'phase',
         status: 'group',
-        progress: 0,
-        workEstimate: 0,
-        dueDate: null
+        progress: phaseProgress,
+        workEstimate: phaseWorkEstimate,
+        dueDate: null,
+        taskCount: phaseTasks.length,
+        completedCount: phaseTasks.filter(t => t.status === 'Done').length
       });
 
-      // Add tasks under each phase
-      phaseTasks.forEach(task => {
-        const startDate = new Date(task.dueDate);
-        startDate.setDate(startDate.getDate() - 1);
-        
+      // Add tasks under each phase with proper WBS numbering
+      phaseTasks.forEach((task, index) => {
         const taskTitle = task.title || task.name || 'Untitled Task';
         const progress = task.status === 'Done' ? 100 : task.status === 'In Progress' ? 50 : 0;
+        const wbsNumber = `${taskId}.${index + 1}`;
 
         wbsData.push({
-          id: `task-${taskId++}`,
+          id: `task-${taskId}`,
           parent: groupId,
           text: taskTitle,
           type: 'task',
@@ -517,9 +524,33 @@ app.post('/generate-wbs', authenticateToken, async (req, res) => {
           workEstimate: task.workEstimate || 0,
           dueDate: task.dueDate,
           assignedTo: task.assignedTo,
-          description: task.description
+          description: task.description,
+          wbsNumber: wbsNumber,
+          level: 2 // Task level
         });
       });
+      
+      taskId++;
+    });
+
+    // Add project summary as root node
+    const totalTasks = wbsData.filter(item => item.type === 'task').length;
+    const totalCompleted = wbsData.filter(item => item.type === 'task' && item.status === 'Done').length;
+    const overallProgress = totalTasks > 0 ? Math.round((totalCompleted / totalTasks) * 100) : 0;
+    const totalWorkEstimate = wbsData.filter(item => item.type === 'task').reduce((sum, task) => sum + (task.workEstimate || 0), 0);
+
+    wbsData.unshift({
+      id: 'project-root',
+      parent: null,
+      text: project.name,
+      type: 'project',
+      status: 'active',
+      progress: overallProgress,
+      workEstimate: totalWorkEstimate,
+      dueDate: null,
+      taskCount: totalTasks,
+      completedCount: totalCompleted,
+      level: 0 // Project root level
     });
 
     res.json({ wbsData, projectInfo: { name: project.name, description: project.description, currentPhase: project.currentPhase } });
