@@ -116,6 +116,7 @@ const projectSchema = new mongoose.Schema({
         },
         dueDate: Date,
         assignedTo: String,
+        workEstimate: Number, // Hours estimate
         phase: {
             type: String,
             enum: ['Planning', 'Execution', 'Monitoring', 'Closure'],
@@ -431,23 +432,97 @@ app.post('/generate-gantt', authenticateToken, async (req, res) => {
 
 app.post('/generate-wbs', authenticateToken, async (req, res) => {
   try {
-    const { projectId } = req.body;
+    const { projectId, viewMode, filters } = req.body;
     const project = await Project.findOne({ _id: projectId, userId: req.user.userId });
     if (!project) return res.status(404).json({ error: 'Project not found' });
 
-    const prompt = `Generate a Work Breakdown Structure (WBS) in flat JSON array format for a project with this description: ${project.description}. Use { id, parent, text } format.`;
+    // Get tasks based on filters (similar to Gantt endpoint)
+    let tasks = project.tasks;
+    
+    if (filters) {
+      if (filters.phase) {
+        tasks = tasks.filter(task => task.phase === filters.phase);
+      }
+      
+      if (filters.sprint) {
+        const today = new Date();
+        const currentSprintStart = new Date(today);
+        currentSprintStart.setDate(today.getDate() - today.getDay());
+        
+        const currentSprintEnd = new Date(currentSprintStart);
+        currentSprintEnd.setDate(currentSprintStart.getDate() + 13);
+        
+        if (filters.sprint === 'current') {
+          tasks = tasks.filter(task => {
+            const taskDate = new Date(task.dueDate);
+            return taskDate >= currentSprintStart && taskDate <= currentSprintEnd;
+          });
+        } else if (filters.sprint === 'next') {
+          const nextSprintStart = new Date(currentSprintEnd);
+          nextSprintStart.setDate(currentSprintEnd.getDate() + 1);
+          
+          const nextSprintEnd = new Date(nextSprintStart);
+          nextSprintEnd.setDate(nextSprintStart.getDate() + 13);
+          
+          tasks = tasks.filter(task => {
+            const taskDate = new Date(task.dueDate);
+            return taskDate >= nextSprintStart && taskDate <= nextSprintEnd;
+          });
+        }
+      }
+    }
 
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4',
-      messages: [
-        { role: 'user', content: prompt }
-      ]
+    // Group tasks by phase
+    const phaseGroups = {};
+    ['Planning', 'Execution', 'Monitoring', 'Closure'].forEach(phase => {
+      const phaseTasks = tasks.filter(task => task.phase === phase);
+      if (phaseTasks.length > 0) {
+        phaseGroups[phase] = phaseTasks;
+      }
     });
 
-    const json = response.choices[0].message.content.match(/```json\s*([\s\S]+?)\s*```/);
-    const wbsData = JSON.parse(json ? json[1] : response.choices[0].message.content);
+    // Convert tasks to WBS format
+    const wbsData = [];
+    let taskId = 1;
 
-    res.json({ wbsData });
+    // Add phase groups as parent nodes
+    Object.entries(phaseGroups).forEach(([phase, phaseTasks]) => {
+      const groupId = `phase-${phase}`;
+      wbsData.push({
+        id: groupId,
+        parent: null,
+        text: phase,
+        type: 'phase',
+        status: 'group',
+        progress: 0,
+        workEstimate: 0,
+        dueDate: null
+      });
+
+      // Add tasks under each phase
+      phaseTasks.forEach(task => {
+        const startDate = new Date(task.dueDate);
+        startDate.setDate(startDate.getDate() - 1);
+        
+        const taskTitle = task.title || task.name || 'Untitled Task';
+        const progress = task.status === 'Done' ? 100 : task.status === 'In Progress' ? 50 : 0;
+
+        wbsData.push({
+          id: `task-${taskId++}`,
+          parent: groupId,
+          text: taskTitle,
+          type: 'task',
+          status: task.status,
+          progress: progress,
+          workEstimate: task.workEstimate || 0,
+          dueDate: task.dueDate,
+          assignedTo: task.assignedTo,
+          description: task.description
+        });
+      });
+    });
+
+    res.json({ wbsData, projectInfo: { name: project.name, description: project.description, currentPhase: project.currentPhase } });
   } catch (err) {
     console.error('WBS error:', err);
     res.status(500).json({ error: 'Failed to generate WBS' });
