@@ -270,6 +270,19 @@ export async function generateWBS() {
     console.log('[WBS] wbsData length:', data.wbsData.length);
     console.log('[WBS] First few items:', data.wbsData.slice(0, 3));
 
+    // Validate that we have meaningful data
+    if (data.wbsData.length === 0) {
+      console.warn('[WBS] No WBS data found, showing empty state message');
+      chartContainer.innerHTML = `
+        <div style="text-align: center; padding: 40px; background: #f8f9fa; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+          <h3 style="color: #495057; margin-bottom: 15px;">No Work Breakdown Structure Data</h3>
+          <p style="color: #6c757d; margin-bottom: 20px;">This project doesn't have any tasks or phases defined yet.</p>
+          <p style="color: #6c757d; font-size: 14px;">Try adding some tasks to your project first.</p>
+        </div>
+      `;
+      return;
+    }
+
     // Transform the data to jstree format
     const jstreeData = data.wbsData.map(item => ({
       id: item.id,
@@ -322,13 +335,27 @@ export async function generateWBS() {
     
     // Prepare the chart container with proper styling
     chartContainer.innerHTML = `
-      <div id="wbsChart" style="min-height: 400px; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+      <div id="wbsChart" style="min-height: 400px; padding: 20px; background: #f8f9fa; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+        <div style="margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #dee2e6;">
+          <h3 style="margin: 0; color: #495057; font-size: 18px;">Work Breakdown Structure</h3>
+          <p style="margin: 5px 0 0 0; color: #6c757d; font-size: 14px;">Project: ${data.projectInfo?.name || 'Unknown Project'}</p>
+        </div>
         <style>
+          #wbsChart {
+            background: #f8f9fa !important;
+            color: #333 !important;
+          }
+          #wbsChart .jstree-default {
+            background: #f8f9fa !important;
+            color: #333 !important;
+          }
           #wbsChart .jstree-default .jstree-node {
             margin-left: 20px;
+            color: #333 !important;
           }
           #wbsChart .jstree-default .jstree-children {
             margin-left: 20px;
+            color: #333 !important;
           }
           #wbsChart .jstree-default .jstree-themeicon {
             margin-right: 8px;
@@ -337,19 +364,29 @@ export async function generateWBS() {
             padding: 8px 12px;
             border-radius: 4px;
             transition: background-color 0.2s;
+            color: #333 !important;
+            background: transparent !important;
           }
           #wbsChart .jstree-default .jstree-anchor:hover {
-            background-color: #f8f9fa;
+            background-color: #e9ecef !important;
+            color: #495057 !important;
           }
           #wbsChart .jstree-default .jstree-clicked {
-            background-color: #e3f2fd;
-            border: 1px solid #2196f3;
+            background-color: #e3f2fd !important;
+            border: 1px solid #2196f3 !important;
+            color: #1976d2 !important;
           }
           #wbsChart .jstree-default .jstree-wholerow-clicked {
-            background-color: #e3f2fd;
+            background-color: #e3f2fd !important;
           }
           #wbsChart .jstree-default .jstree-wholerow-hovered {
-            background-color: #f8f9fa;
+            background-color: #f8f9fa !important;
+          }
+          #wbsChart .jstree-default .jstree-text {
+            color: #333 !important;
+          }
+          #wbsChart .jstree-default .jstree-icon {
+            color: #6c757d !important;
           }
         </style>
       </div>
@@ -428,7 +465,7 @@ export async function generateWBS() {
 
 // Fallback function to display WBS data as simple HTML if jstree fails
 function displayWBSAsHTML(wbsData) {
-  let html = '<div style="font-family: Arial, sans-serif;">';
+  let html = '<div style="font-family: Arial, sans-serif; color: #333;">';
   
   // Group by parent
   const groupedData = {};
@@ -450,14 +487,16 @@ function displayWBSAsHTML(wbsData) {
                           item.status === 'In Progress' ? '#ffc107' : '#dc3545';
       
       groupHtml += `
-        <div style="margin-left: ${level * 20}px; margin-bottom: 8px; padding: 8px; border-left: 3px solid ${statusColor}; background: #f8f9fa; border-radius: 4px;">
-          <div style="font-weight: bold; color: #495057;">
+        <div style="margin-left: ${level * 20}px; margin-bottom: 12px; padding: 12px; border-left: 4px solid ${statusColor}; background: white; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+          <div style="font-weight: bold; color: #495057; font-size: 14px; margin-bottom: 6px;">
             ${item.wbsNumber ? item.wbsNumber + '. ' : ''}${item.text}
           </div>
-          <div style="font-size: 12px; color: #6c757d; margin-top: 4px;">
-            Type: ${item.type} | Status: ${item.status} | Progress: ${item.progress || 0}%
-            ${item.workEstimate ? `| Work: ${item.workEstimate}h` : ''}
-            ${item.dueDate ? `| Due: ${new Date(item.dueDate).toLocaleDateString()}` : ''}
+          <div style="font-size: 12px; color: #6c757d; line-height: 1.4;">
+            <span style="background: #e9ecef; padding: 2px 6px; border-radius: 3px; margin-right: 8px;">Type: ${item.type}</span>
+            <span style="background: #e9ecef; padding: 2px 6px; border-radius: 3px; margin-right: 8px;">Status: ${item.status}</span>
+            <span style="background: #e9ecef; padding: 2px 6px; border-radius: 3px; margin-right: 8px;">Progress: ${item.progress || 0}%</span>
+            ${item.workEstimate ? `<span style="background: #e9ecef; padding: 2px 6px; border-radius: 3px; margin-right: 8px;">Work: ${item.workEstimate}h</span>` : ''}
+            ${item.dueDate ? `<span style="background: #e9ecef; padding: 2px 6px; border-radius: 3px; margin-right: 8px;">Due: ${new Date(item.dueDate).toLocaleDateString()}</span>` : ''}
           </div>
         </div>
       `;
@@ -480,8 +519,8 @@ function fallbackToHTMLDisplay(wbsData) {
   const chartContainer = document.getElementById('chartContainer');
   if (chartContainer) {
     chartContainer.innerHTML = `
-      <div style="padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-        <h3 style="margin-bottom: 20px; color: #495057;">Work Breakdown Structure (Simplified View)</h3>
+      <div style="padding: 20px; background: #f8f9fa; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); color: #333;">
+        <h3 style="margin-bottom: 20px; color: #495057; border-bottom: 2px solid #dee2e6; padding-bottom: 10px;">Work Breakdown Structure (Simplified View)</h3>
         ${displayWBSAsHTML(wbsData)}
       </div>
     `;
