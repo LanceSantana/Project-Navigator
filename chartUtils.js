@@ -341,25 +341,38 @@ export async function generateWBS() {
           <p style="margin: 5px 0 0 0; color: #6c757d; font-size: 14px;">Project: ${data.projectInfo?.name || 'Unknown Project'}</p>
         </div>
         <style>
+          /* Force all text to be visible with !important */
+          #wbsChart * {
+            color: #333 !important;
+          }
+          
           #wbsChart {
             background: #f8f9fa !important;
             color: #333 !important;
           }
-          #wbsChart .jstree-default {
+          
+          /* Override jstree default styles aggressively */
+          #wbsChart .jstree-default,
+          #wbsChart .jstree-default * {
             background: #f8f9fa !important;
             color: #333 !important;
           }
+          
           #wbsChart .jstree-default .jstree-node {
             margin-left: 20px;
             color: #333 !important;
           }
+          
           #wbsChart .jstree-default .jstree-children {
             margin-left: 20px;
             color: #333 !important;
           }
+          
           #wbsChart .jstree-default .jstree-themeicon {
             margin-right: 8px;
+            color: #6c757d !important;
           }
+          
           #wbsChart .jstree-default .jstree-anchor {
             padding: 8px 12px;
             border-radius: 4px;
@@ -367,26 +380,46 @@ export async function generateWBS() {
             color: #333 !important;
             background: transparent !important;
           }
+          
           #wbsChart .jstree-default .jstree-anchor:hover {
             background-color: #e9ecef !important;
             color: #495057 !important;
           }
+          
           #wbsChart .jstree-default .jstree-clicked {
             background-color: #e3f2fd !important;
             border: 1px solid #2196f3 !important;
             color: #1976d2 !important;
           }
+          
           #wbsChart .jstree-default .jstree-wholerow-clicked {
             background-color: #e3f2fd !important;
           }
+          
           #wbsChart .jstree-default .jstree-wholerow-hovered {
             background-color: #f8f9fa !important;
           }
-          #wbsChart .jstree-default .jstree-text {
+          
+          /* Force text visibility */
+          #wbsChart .jstree-default .jstree-text,
+          #wbsChart .jstree-default .jstree-anchor,
+          #wbsChart .jstree-default .jstree-node,
+          #wbsChart .jstree-default .jstree-children {
             color: #333 !important;
+            background: transparent !important;
           }
+          
           #wbsChart .jstree-default .jstree-icon {
             color: #6c757d !important;
+          }
+          
+          /* Additional overrides for jstree elements */
+          #wbsChart .jstree-default .jstree-anchor > * {
+            color: #333 !important;
+          }
+          
+          #wbsChart .jstree-default .jstree-anchor span {
+            color: #333 !important;
           }
         </style>
       </div>
@@ -429,7 +462,47 @@ export async function generateWBS() {
       }
     }).on('ready.jstree', function() {
       console.log('[WBS] jstree ready event fired');
-      showSnackbar('Work Breakdown Structure loaded successfully!');
+      
+      // Check if text is actually visible after a short delay
+      setTimeout(() => {
+        const wbsChart = document.getElementById('wbsChart');
+        if (wbsChart) {
+          const textElements = wbsChart.querySelectorAll('.jstree-text, .jstree-anchor');
+          let hasVisibleText = false;
+          
+          console.log('[WBS] Checking text visibility...');
+          console.log('[WBS] Found text elements:', textElements.length);
+          
+          textElements.forEach((el, index) => {
+            const computedStyle = window.getComputedStyle(el);
+            const color = computedStyle.color;
+            const backgroundColor = computedStyle.backgroundColor;
+            
+            console.log(`[WBS] Element ${index}:`, {
+              tagName: el.tagName,
+              className: el.className,
+              textContent: el.textContent?.substring(0, 50),
+              computedColor: color,
+              computedBackground: backgroundColor,
+              element: el
+            });
+            
+            // Check if text has reasonable contrast
+            if (color && (color.includes('rgb(51, 51, 51)') || color.includes('#333') || color.includes('black'))) {
+              hasVisibleText = true;
+            }
+          });
+          
+          if (!hasVisibleText) {
+            console.warn('[WBS] Text still not visible, falling back to HTML display');
+            showSnackbar('WBS tree text not visible, showing simplified view.');
+            fallbackToHTMLDisplay(jstreeData);
+          } else {
+            showSnackbar('Work Breakdown Structure loaded successfully!');
+          }
+        }
+      }, 1000); // Check after 1 second
+      
       // Clear the timeout since jstree loaded successfully
       if (window.wbsTimeout) {
         clearTimeout(window.wbsTimeout);
