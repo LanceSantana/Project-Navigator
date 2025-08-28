@@ -358,11 +358,19 @@
       const currentProjectId = localStorage.getItem('currentProjectId');
       if (!currentProjectId) return;
 
+      // Save to project-specific history
       const historyKey = `chatHistory_${currentProjectId}`;
-      let history = JSON.parse(localStorage.getItem(historyKey)) || [];
-      history.unshift(convo);
-      if (history.length > 20) history.pop(); // Keep last 20 conversations
-      localStorage.setItem(historyKey, JSON.stringify(history));
+      let projectHistory = JSON.parse(localStorage.getItem(historyKey)) || [];
+      projectHistory.unshift(convo);
+      if (projectHistory.length > 20) projectHistory.pop(); // Keep last 20 conversations per project
+      localStorage.setItem(historyKey, JSON.stringify(projectHistory));
+
+      // Save to global history (across all projects)
+      let globalHistory = JSON.parse(localStorage.getItem('globalChatHistory')) || [];
+      globalHistory.unshift(convo);
+      if (globalHistory.length > 50) globalHistory.pop(); // Keep last 50 conversations globally
+      localStorage.setItem('globalChatHistory', JSON.stringify(globalHistory));
+
       renderHistoryList();
     }
 
@@ -373,19 +381,11 @@
       const clearHistoryBtn = document.getElementById('clearHistoryBtn');
       
       historyList.innerHTML = '';
-      const currentProjectId = localStorage.getItem('currentProjectId');
       
-      if (!currentProjectId) {
-        noHistory.style.display = 'block';
-        historyCount.textContent = '0 conversations';
-        clearHistoryBtn.style.display = 'none';
-        return;
-      }
-
-      const historyKey = `chatHistory_${currentProjectId}`;
-      const history = JSON.parse(localStorage.getItem(historyKey)) || [];
+      // Get global history (across all projects)
+      const globalHistory = JSON.parse(localStorage.getItem('globalChatHistory')) || [];
       
-      if (history.length === 0) {
+      if (globalHistory.length === 0) {
         noHistory.style.display = 'block';
         historyCount.textContent = '0 conversations';
         clearHistoryBtn.style.display = 'none';
@@ -394,9 +394,9 @@
 
       noHistory.style.display = 'none';
       clearHistoryBtn.style.display = 'inline-block';
-      historyCount.textContent = `${history.length} conversation${history.length !== 1 ? 's' : ''}`;
+      historyCount.textContent = `${globalHistory.length} conversation${globalHistory.length !== 1 ? 's' : ''}`;
 
-      history.forEach((item, index) => {
+      globalHistory.forEach((item, index) => {
         const li = document.createElement('li');
         li.className = 'history-item';
         li.style.opacity = '0';
@@ -414,14 +414,32 @@
         a.textContent = displayText;
         a.title = item.title || (item.messages && item.messages[0]?.text) || 'Untitled';
         
+        // Add project info and timestamp
+        const infoDiv = document.createElement('div');
+        infoDiv.className = 'history-info';
+        
+        // Show project name if available
+        if (item.projectId) {
+          const projectSelect = document.getElementById('projectSelect');
+          const projectOption = Array.from(projectSelect.options).find(opt => opt.value === item.projectId);
+          if (projectOption) {
+            const projectSpan = document.createElement('span');
+            projectSpan.className = 'history-project';
+            projectSpan.textContent = `📁 ${projectOption.textContent}`;
+            infoDiv.appendChild(projectSpan);
+          }
+        }
+        
         // Add timestamp if available
         if (item.timestamp) {
-          const timeDiv = document.createElement('div');
-          timeDiv.className = 'history-time';
+          const timeSpan = document.createElement('span');
+          timeSpan.className = 'history-time';
           const date = new Date(item.timestamp);
-          timeDiv.textContent = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-          li.appendChild(timeDiv);
+          timeSpan.textContent = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+          infoDiv.appendChild(timeSpan);
         }
+        
+        li.appendChild(infoDiv);
         
         a.addEventListener('click', (e) => {
           e.preventDefault();
@@ -448,12 +466,26 @@
       const chatBox = document.getElementById('chatBox');
       chatBox.innerHTML = '';
       
+      // Check if we need to switch to the project this conversation belongs to
+      const currentProjectId = localStorage.getItem('currentProjectId');
+      if (convo.projectId && convo.projectId !== currentProjectId) {
+        // Switch to the project this conversation belongs to
+        document.getElementById('projectSelect').value = convo.projectId;
+        localStorage.setItem('currentProjectId', convo.projectId);
+        
+        // Update the delete button state
+        document.getElementById('deleteProjectBtn').disabled = false;
+        
+        // Load project details if available
+        loadProjectDetails(convo.projectId);
+      }
+      
       // Add a header showing which conversation was loaded
       const headerDiv = document.createElement('div');
       headerDiv.className = 'conversation-header';
       headerDiv.innerHTML = `
         <div class="conversation-title">📋 ${convo.title}</div>
-        <div class="conversation-info">Loaded from history</div>
+        <div class="conversation-info">Loaded from history${convo.projectId && convo.projectId !== currentProjectId ? ' (switched to project)' : ''}</div>
       `;
       chatBox.appendChild(headerDiv);
       
@@ -486,21 +518,27 @@
 
     // Clear history functionality
     document.getElementById('clearHistoryBtn').addEventListener('click', function() {
-      const currentProjectId = localStorage.getItem('currentProjectId');
-      if (!currentProjectId) return;
-      
-      const confirmClear = confirm('Are you sure you want to clear all conversation history for this project? This action cannot be undone.');
+      const confirmClear = confirm('Are you sure you want to clear ALL conversation history across all projects? This action cannot be undone.');
       if (!confirmClear) return;
       
-      const historyKey = `chatHistory_${currentProjectId}`;
-      localStorage.removeItem(historyKey);
+      // Clear global history
+      localStorage.removeItem('globalChatHistory');
+      
+      // Clear all project-specific histories
+      const keys = Object.keys(localStorage);
+      keys.forEach(key => {
+        if (key.startsWith('chatHistory_')) {
+          localStorage.removeItem(key);
+        }
+      });
+      
       renderHistoryList();
       
       // Show feedback
       const chatBox = document.getElementById('chatBox');
       const feedbackDiv = document.createElement('div');
       feedbackDiv.className = 'message bot feedback-message';
-      feedbackDiv.textContent = 'Conversation history cleared successfully.';
+      feedbackDiv.textContent = 'All conversation history cleared successfully.';
       chatBox.appendChild(feedbackDiv);
       
       setTimeout(() => {

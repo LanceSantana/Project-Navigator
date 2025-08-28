@@ -442,3 +442,23 @@ body {
 .gantt .today-highlight {
   fill: rgba(0, 160, 8, 0.1);
 }
+
+/* History Info Styles */
+.history-info {
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.history-project {
+    font-size: 0.8em;
+    color: #38d172;
+    font-weight: 500;
+}
+
+.history-time {
+    font-size: 0.75em;
+    color: #888;
+    font-style: italic;
+}
