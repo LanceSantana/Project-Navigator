@@ -172,6 +172,20 @@ body {
     color: #ffffff;
 }
 
+/*delete project buttton*/
+.button.delete-button {
+    background-color: #000;
+}
+
+.button.delete-button:hover {
+    background-color: #e63939;
+}
+
+.button.delete-button:active {
+    background-color: #cc3333;
+}
+
+
 /* Project Section */
 .project-section {
     display: flex;
@@ -191,13 +205,11 @@ body {
     background-color: #000000;
     color: white;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: background-color 0.3s;
 }
 
 .project-section button:hover {
     background-color: #00a008;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* Phase Progress Section */
@@ -221,7 +233,7 @@ body {
     background-color: #ddd;
     color: #333;
     font-size: 14px;
-    transition: all 0.3s ease;
+    transition: all 0.3s;
 }
 
 .phase-marker.active {
@@ -267,13 +279,10 @@ body {
     background-color: #333;
     color: white;
     cursor: pointer;
-    transition: all 0.3s ease;
 }
 
 .form-buttons button:hover {
     background-color: #000;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* Chat Box */
@@ -472,7 +481,6 @@ body {
 #output:empty {
     display: none;
 }
-
 /* Centered layout for login/signup UI */
 .content.centered {
     position: absolute;
@@ -516,14 +524,13 @@ body {
     border-radius: 6px;
     cursor: pointer;
     text-align: center;
-    transition: all 0.3s ease;
+    transition: background-color 0.3s;
 }
 
 .auth-form button:hover {
     background-color: #555555; /* Darker button background on hover */
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
+
 
 /* Video Background */
 #video-background {
@@ -651,73 +658,4 @@ html {
 
 .sidebar::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.5);
-}
-
-/* Chart Controls */
-.chart-controls {
-    margin-top: 20px;
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-.gantt-filters {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-  padding: 10px;
-  background-color: #1a1a1a;
-  border-radius: 5px;
-}
-
-.gantt-filters select {
-  padding: 8px;
-  border-radius: 4px;
-  border: 1px solid #333;
-  background-color: #2a2a2a;
-  color: #fff;
-  cursor: pointer;
-}
-
-.gantt-filters select:hover {
-  border-color: #00a008;
-}
-
-.gantt-filters select:focus {
-  outline: none;
-  border-color: #00a008;
-  box-shadow: 0 0 0 2px rgba(0, 160, 8, 0.2);
-}
-
-/* Gantt chart specific styles */
-.gantt .bar-wrapper {
-  cursor: pointer;
-}
-
-.gantt .bar-wrapper:hover .bar {
-  fill: #00a008;
-}
-
-.gantt .bar-group {
-  cursor: pointer;
-}
-
-.gantt .bar-group:hover .bar {
-  fill: #00a008;
-}
-
-.gantt .grid-header {
-  fill: #1a1a1a;
-}
-
-.gantt .grid-row {
-  fill: #2a2a2a;
-}
-
-.gantt .lower-text, .gantt .upper-text {
-  fill: #fff;
-}
-
-.gantt .today-highlight {
-  fill: rgba(0, 160, 8, 0.1);
 }
