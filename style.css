@@ -23,57 +23,6 @@ body {
     margin-top: 0;
     font-size: 1.5em;
     color: #ffffff;
-    margin-bottom: 15px;
-}
-
-/* History Header */
-.history-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-    padding: 10px;
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-}
-
-.history-count {
-    font-size: 0.9em;
-    color: #cccccc;
-    font-weight: 500;
-}
-
-.clear-history-btn {
-    background: none;
-    border: none;
-    color: #ff6b6b;
-    cursor: pointer;
-    font-size: 1.2em;
-    padding: 5px;
-    border-radius: 4px;
-    transition: all 0.2s ease;
-}
-
-.clear-history-btn:hover {
-    background-color: rgba(255, 107, 107, 0.2);
-    transform: scale(1.1);
-}
-
-/* No History State */
-.no-history {
-    text-align: center;
-    padding: 20px;
-    color: #888;
-}
-
-.no-history p {
-    margin: 5px 0;
-}
-
-.history-hint {
-    font-size: 0.8em;
-    color: #666;
-    font-style: italic;
 }
 
 .sidebar ul {
@@ -82,77 +31,18 @@ body {
 }
 
 .sidebar li {
-    padding: 0;
-    margin-bottom: 8px;
-    background-color: transparent;
-    border-radius: 8px;
+    padding: 8px;
+    margin-bottom: 6px;
+    background-color: #fff;
+    border-radius: 6px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: background-color 0.2s;
     color: #464646;
-    overflow: hidden;
 }
 
 .sidebar li:hover {
-    transform: translateX(5px);
-}
-
-/* History Items */
-.history-item {
-    background-color: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    padding: 12px;
-    margin-bottom: 8px;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.history-item:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.2);
-    transform: translateX(5px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-.history-item-active {
-    background-color: rgba(56, 209, 114, 0.2);
-    border-color: #38d172;
-    transform: scale(1.02);
-}
-
-.history-link {
-    color: #ffffff;
-    text-decoration: none;
-    display: block;
-    width: 100%;
-    font-weight: 500;
-    line-height: 1.4;
-}
-
-.history-link:hover {
-    color: #38d172;
-    text-decoration: none;
-}
-
-.history-time {
-    font-size: 0.75em;
-    color: #888;
-    margin-top: 8px;
-    font-style: italic;
-}
-
-.sidebar li a {
-    color: #464646;
-    text-decoration: none;
-    display: block;
-    width: 100%;
-    height: 100%;
-}
-
-.sidebar li a:hover {
-    color: #000;
     text-decoration: underline;
+    color: #000;
 }
 
 /* Main Content Layout */
@@ -191,13 +81,11 @@ body {
     background-color: #000000;
     color: white;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: background-color 0.3s;
 }
 
 .project-section button:hover {
     background-color: #00a008;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* Phase Progress Section */
@@ -221,7 +109,7 @@ body {
     background-color: #ddd;
     color: #333;
     font-size: 14px;
-    transition: all 0.3s ease;
+    transition: all 0.3s;
 }
 
 .phase-marker.active {
@@ -267,13 +155,10 @@ body {
     background-color: #333;
     color: white;
     cursor: pointer;
-    transition: all 0.3s ease;
 }
 
 .form-buttons button:hover {
     background-color: #000;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* Chat Box */
@@ -285,56 +170,28 @@ body {
     border-radius: 10px;
     overflow: hidden;
     background-color: white;
-    width: 100%;
-    height: 100%;
-    min-height: 0;
+    width: 100%
 }
 
 .chat-box {
     flex: 1;
     padding: 20px;
     overflow-y: auto;
-    background-color:#fefefe;
+    background-color: #fefefe;
     display: flex;
     flex-direction:column;
     gap: 10px;
     scroll-behavior: smooth;
 }
 
-/* Conversation Header */
-.conversation-header {
-    background-color: #f8f9fa;
-    border: 1px solid #e9ecef;
-    border-radius: 8px;
-    padding: 15px;
-    margin-bottom: 15px;
-    text-align: center;
-    opacity: 0;
-    transform: translateY(-20px);
-}
-
-.conversation-title {
-    font-weight: bold;
-    color: #495057;
-    font-size: 1.1em;
-    margin-bottom: 5px;
-}
-
-.conversation-info {
-    font-size: 0.9em;
-    color: #6c757d;
-    font-style: italic;
-}
-
 /* Messages */
 .message {
-    margin: 10px 0; 
+    margin: 10px 0;
     padding: 10px 14px;
     border-radius: 12px;
     max-width: 70%;
     word-wrap: break-word;
     font-size: 14px;
-    transition: all 0.3s ease;
 }
 
 .user {
@@ -355,15 +212,6 @@ body {
     margin-bottom: 6px;
 }
 
-/* Feedback Message */
-.feedback-message {
-    background-color: #17a2b8;
-    color: white;
-    text-align: center;
-    font-style: italic;
-    opacity: 0;
-    transform: translateY(-20px);
-}
 
 /* Input Section */
 .input-section {
@@ -371,8 +219,6 @@ body {
     flex-direction: column;
     border-top: 1px solid #ccc;
     padding: 10px;
-    max-height: 200px;  /* Optional: cap this entire input area */
-    box-sizing: border-box;
 }
 
 .input-section textarea {
@@ -382,19 +228,7 @@ body {
     border: 1px solid #ccc;
     border-radius: 8px;
     min-height: 40px;
-    max-height: 150px;      /* ✅ cap the height */
-    overflow-y: auto;       /* ✅ add internal scrollbar */
-    line-height: 1.4;
-    background-color: white;
-    color: #1a1a1a;
 }
-
-.input-section textarea:focus {
-    outline: none;
-    border-color: #2db4d6;
-    background-color: #fefefe;
-}
-
 
 /* Buttons */
 .buttons {
@@ -411,13 +245,11 @@ body {
     cursor: pointer;
     font-size: 14px;
     text-align: center;
-    transition: all 0.3s ease;
+    transition: background-color 0.3s;
 }
 
 .button:hover {
     background-color: #272727;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* File Upload Button */
@@ -430,15 +262,12 @@ body {
     cursor: pointer;
     text-align: center;
     font-size: 14px;
-    transition: all 0.3s ease;
+    transition: background-color 0.3s;
 }
 
 .choose-file-button:hover {
     background-color: #555;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
-
 
 /* Logout */
 .logout-button {
@@ -449,13 +278,10 @@ body {
     border: none;
     border-radius: 6px;
     cursor: pointer;
-    transition: all 0.3s ease;
 }
 
 .logout-button:hover {
     background-color: #ccc;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* Output Pre */
@@ -472,7 +298,6 @@ body {
 #output:empty {
     display: none;
 }
-
 /* Centered layout for login/signup UI */
 .content.centered {
     position: absolute;
@@ -516,14 +341,13 @@ body {
     border-radius: 6px;
     cursor: pointer;
     text-align: center;
-    transition: all 0.3s ease;
+    transition: background-color 0.3s;
 }
 
 .auth-form button:hover {
     background-color: #555555; /* Darker button background on hover */
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
+
 
 /* Video Background */
 #video-background {
@@ -545,120 +369,17 @@ body {
     animation: blink 1s steps(2, start) infinite;
 }
 
-@keyframes blink {
-    to {
-        visibility: hidden;
-    }
-}
-
-/* Enhanced Animations */
-@keyframes slideInFromLeft {
-    from {
-        opacity: 0;
-        transform: translateX(-30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-@keyframes slideInFromBottom {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
-}
-
-@keyframes pulse {
-    0% {
-        transform: scale(1);
-    }
-    50% {
-        transform: scale(1.05);
-    }
-    100% {
-        transform: scale(1);
-    }
-}
-
-/* Loading Animation */
-.loading-message {
-    background-color: #6c757d !important;
-    color: white !important;
-    animation: pulse 1.5s ease-in-out infinite;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    .sidebar {
-        width: 200px;
-        padding: 15px;
-    }
-    
-    .history-header {
-        flex-direction: column;
-        gap: 10px;
-    }
-    
-    .main-content {
-        padding: 15px;
-    }
-    
-    .project-section {
-        flex-direction: column;
-        gap: 8px;
-    }
-    
-    .phase-bar {
-        flex-wrap: wrap;
-        gap: 8px;
-    }
-}
-
-/* Smooth scrolling for the entire page */
-html {
-    scroll-behavior: smooth;
-}
-
-/* Custom scrollbar for sidebar */
-.sidebar::-webkit-scrollbar {
-    width: 6px;
-}
-
-.sidebar::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 3px;
-}
-
-.sidebar::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 3px;
-}
-
-.sidebar::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.5);
-}
-
-/* Chart Controls */
 .chart-controls {
     margin-top: 20px;
     display: flex;
     gap: 10px;
     flex-wrap: wrap;
+}
+
+@keyframes blink {
+    to {
+        visibility: hidden;
+    }
 }
 
 .gantt-filters {
