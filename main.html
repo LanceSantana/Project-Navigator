@@ -32,7 +32,15 @@
 <body>
   <div class="sidebar">
     <h2>Recent History</h2>
-    <ul id="historyList"></ul>
+    <div class="history-header">
+      <span class="history-count" id="historyCount">0 conversations</span>
+      <button class="clear-history-btn" id="clearHistoryBtn" title="Clear History">🗑️</button>
+    </div>
+    <ul id="historyList" class="history-list"></ul>
+    <div class="no-history" id="noHistory" style="display: none;">
+      <p>No conversations yet</p>
+      <p class="history-hint">Start chatting to see your history here!</p>
+    </div>
   </div>
 
   <div class="main-content">
@@ -160,6 +168,9 @@
           div.textContent = msg.message;
           chatBox.appendChild(div);
         });
+        
+        // Render history list after loading chat
+        renderHistoryList();
       } catch (err) {
         console.error(err);
       }
@@ -168,17 +179,19 @@
     document.getElementById("projectSelect").addEventListener("change", function() {
       const projectId = this.value;
       localStorage.setItem("currentProjectId", projectId);
-      if (projectId) loadChatHistory();
-    });
-
-    document.getElementById("projectSelect").addEventListener("change", function() {
-      const projectId = this.value;
-      localStorage.setItem("currentProjectId", projectId);
-      if (projectId) loadChatHistory();
+      if (projectId) {
+        loadChatHistory();
+        renderHistoryList();
+      } else {
+        document.getElementById("chatBox").innerHTML = '';
+        document.getElementById("historyList").innerHTML = '';
+        renderHistoryList();
+      }
     });
 
     window.addEventListener("DOMContentLoaded", () => {
       loadProjects();
+      renderHistoryList();
       // Add click handler for new project button
       document.getElementById('newProjectBtn').addEventListener('click', () => {
         document.getElementById('newProjectForm').style.display = 'block';
@@ -229,11 +242,12 @@
         document.getElementById("projectDescription").value = '';
         document.getElementById("newProjectForm").style.display = "none";
   
-        await loadProjects();
+                await loadProjects();
         document.getElementById("projectSelect").value = project._id;
         localStorage.setItem("currentProjectId", project._id);
-  
+
         loadChatHistory();
+        renderHistoryList();
       } catch (err) {
         console.error(err);
         showSnackbar("Error creating project. Please try again.");
@@ -262,6 +276,7 @@
           document.getElementById("chatBox").innerHTML = '';
           document.getElementById("projectSelect").value = '';
           document.getElementById("deleteProjectBtn").disabled = true;
+          renderHistoryList();
         } else {
           showSnackbar("Failed to delete project.");
         }
@@ -328,6 +343,7 @@
           document.getElementById("chatBox").innerHTML = '';
           document.getElementById("projectSelect").value = '';
           document.getElementById("deleteProjectBtn").disabled = true;
+          renderHistoryList();
         } else {
           showSnackbar('Failed to delete project.');
         }
@@ -337,6 +353,164 @@
       }
     });
   
+    // Recent History Functions
+    function saveConversation(convo) {
+      const currentProjectId = localStorage.getItem('currentProjectId');
+      if (!currentProjectId) return;
+
+      const historyKey = `chatHistory_${currentProjectId}`;
+      let history = JSON.parse(localStorage.getItem(historyKey)) || [];
+      history.unshift(convo);
+      if (history.length > 20) history.pop(); // Keep last 20 conversations
+      localStorage.setItem(historyKey, JSON.stringify(history));
+      renderHistoryList();
+    }
+
+    function renderHistoryList() {
+      const historyList = document.getElementById('historyList');
+      const noHistory = document.getElementById('noHistory');
+      const historyCount = document.getElementById('historyCount');
+      const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+      
+      historyList.innerHTML = '';
+      const currentProjectId = localStorage.getItem('currentProjectId');
+      
+      if (!currentProjectId) {
+        noHistory.style.display = 'block';
+        historyCount.textContent = '0 conversations';
+        clearHistoryBtn.style.display = 'none';
+        return;
+      }
+
+      const historyKey = `chatHistory_${currentProjectId}`;
+      const history = JSON.parse(localStorage.getItem(historyKey)) || [];
+      
+      if (history.length === 0) {
+        noHistory.style.display = 'block';
+        historyCount.textContent = '0 conversations';
+        clearHistoryBtn.style.display = 'none';
+        return;
+      }
+
+      noHistory.style.display = 'none';
+      clearHistoryBtn.style.display = 'inline-block';
+      historyCount.textContent = `${history.length} conversation${history.length !== 1 ? 's' : ''}`;
+
+      history.forEach((item, index) => {
+        const li = document.createElement('li');
+        li.className = 'history-item';
+        li.style.opacity = '0';
+        li.style.transform = 'translateX(-20px)';
+        
+        const a = document.createElement('a');
+        a.href = '#';
+        a.className = 'history-link';
+        
+        let displayText = item.title || (item.messages && item.messages[0]?.text) || 'Untitled';
+        if (displayText.length > 35) {
+          displayText = displayText.substring(0, 35) + "...";
+        }
+        
+        a.textContent = displayText;
+        a.title = item.title || (item.messages && item.messages[0]?.text) || 'Untitled';
+        
+        // Add timestamp if available
+        if (item.timestamp) {
+          const timeDiv = document.createElement('div');
+          timeDiv.className = 'history-time';
+          const date = new Date(item.timestamp);
+          timeDiv.textContent = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+          li.appendChild(timeDiv);
+        }
+        
+        a.addEventListener('click', (e) => {
+          e.preventDefault();
+          loadConversation(item);
+          
+          // Add visual feedback
+          li.classList.add('history-item-active');
+          setTimeout(() => li.classList.remove('history-item-active'), 300);
+        });
+        
+        li.appendChild(a);
+        historyList.appendChild(li);
+        
+        // Animate item appearance
+        setTimeout(() => {
+          li.style.transition = 'all 0.3s ease';
+          li.style.opacity = '1';
+          li.style.transform = 'translateX(0)';
+        }, index * 100);
+      });
+    }
+
+    function loadConversation(convo) {
+      const chatBox = document.getElementById('chatBox');
+      chatBox.innerHTML = '';
+      
+      // Add a header showing which conversation was loaded
+      const headerDiv = document.createElement('div');
+      headerDiv.className = 'conversation-header';
+      headerDiv.innerHTML = `
+        <div class="conversation-title">📋 ${convo.title}</div>
+        <div class="conversation-info">Loaded from history</div>
+      `;
+      chatBox.appendChild(headerDiv);
+      
+      // Animate header appearance
+      setTimeout(() => {
+        headerDiv.style.transition = 'all 0.3s ease';
+        headerDiv.style.opacity = '1';
+        headerDiv.style.transform = 'translateY(0)';
+      }, 10);
+      
+      // Load messages with animation
+      convo.messages.forEach((msg, index) => {
+        setTimeout(() => {
+          const div = document.createElement("div");
+          div.className = `message ${msg.isUser ? 'user' : 'bot'}`;
+          div.textContent = msg.text;
+          div.style.opacity = '0';
+          div.style.transform = 'translateY(20px)';
+          chatBox.appendChild(div);
+          
+          // Animate message appearance
+          setTimeout(() => {
+            div.style.transition = 'all 0.3s ease';
+            div.style.opacity = '1';
+            div.style.transform = 'translateY(0)';
+          }, 10);
+        }, index * 200);
+      });
+    }
+
+    // Clear history functionality
+    document.getElementById('clearHistoryBtn').addEventListener('click', function() {
+      const currentProjectId = localStorage.getItem('currentProjectId');
+      if (!currentProjectId) return;
+      
+      const confirmClear = confirm('Are you sure you want to clear all conversation history for this project? This action cannot be undone.');
+      if (!confirmClear) return;
+      
+      const historyKey = `chatHistory_${currentProjectId}`;
+      localStorage.removeItem(historyKey);
+      renderHistoryList();
+      
+      // Show feedback
+      const chatBox = document.getElementById('chatBox');
+      const feedbackDiv = document.createElement('div');
+      feedbackDiv.className = 'message bot feedback-message';
+      feedbackDiv.textContent = 'Conversation history cleared successfully.';
+      chatBox.appendChild(feedbackDiv);
+      
+      setTimeout(() => {
+        feedbackDiv.style.transition = 'all 0.3s ease';
+        feedbackDiv.style.opacity = '0';
+        feedbackDiv.style.transform = 'translateY(-20px)';
+        setTimeout(() => feedbackDiv.remove(), 300);
+      }, 2000);
+    });
+
     document.getElementById("sendButton").addEventListener("click", sendMessage);
     document.getElementById("pdfInput").addEventListener("change", uploadPDF);
   
@@ -376,12 +550,32 @@
 
         const data = await response.json();
         botDiv.textContent = data.reply; // Replace "Loading..." with actual response
+        
+        // Save the conversation to history
+        saveConversation({
+          title: message.slice(0, 30) + (message.length > 30 ? '...' : ''),
+          projectId: projectId,
+          timestamp: new Date().toISOString(),
+          messages: [
+            { text: message, isUser: true },
+            { text: data.reply || "No response", isUser: false }
+          ]
+        });
+        
       } catch (err) {
         console.error(err);
         botDiv.textContent = "Error: Failed to get response.";
         showSnackbar("Error sending message. Please try again.");
       }
     }
+
+    // Enter key to send message
+    document.getElementById('userInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
 
   
     document.getElementById('projectSelect').addEventListener('change', () => {
