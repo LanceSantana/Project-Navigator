@@ -210,22 +210,422 @@ export async function generateWBS() {
   const token = localStorage.getItem("jwt");
   const projectId = localStorage.getItem("currentProjectId");
 
+  console.log('[WBS] Starting generation for projectId:', projectId);
+
   if (!token) return showSnackbar("Please log in first.");
   if (!projectId) return showSnackbar("Please select a project first.");
 
-  const response = await fetch(`${API_URL}/generate-wbs`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}`
-    },
-    body: JSON.stringify({ projectId })
-  });
+  // Show loading indicator
+  const chartContainer = document.getElementById('chartContainer');
+  chartContainer.innerHTML = `
+    <div style="text-align: center; padding: 40px;">
+      <div style="font-size: 18px; margin-bottom: 20px;">Loading Work Breakdown Structure...</div>
+      <div style="width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div>
+      <style>
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      </style>
+    </div>
+  `;
 
-  const data = await response.json();
-  document.getElementById('chartContainer').innerHTML = '<div id="wbsChart"></div>';
-  $('#wbsChart').jstree('destroy');
-  $('#wbsChart').jstree({ core: { data: data.wbsData } });
+  try {
+    const response = await fetch(`${API_URL}/generate-wbs`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({ projectId })
+    });
+
+    if (!response.ok) {
+      console.error('[WBS] Failed to fetch:', response.status, response.statusText);
+      chartContainer.innerHTML = `
+        <div style="text-align: center; padding: 40px; color: #e74c3c;">
+          <h3>Failed to load WBS data</h3>
+          <p>Status: ${response.status} ${response.statusText}</p>
+          <button onclick="generateWBS()" style="padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer;">Retry</button>
+        </div>
+      `;
+      return;
+    }
+
+    const data = await response.json();
+    console.log('[WBS] Data received:', data);
+    
+    if (!data.wbsData || !Array.isArray(data.wbsData)) {
+      console.error('[WBS] Invalid wbsData:', data.wbsData);
+      chartContainer.innerHTML = `
+        <div style="text-align: center; padding: 40px; color: #e74c3c;">
+          <h3>Invalid WBS data received</h3>
+          <p>The server returned invalid data format.</p>
+          <button onclick="generateWBS()" style="padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer;">Retry</button>
+        </div>
+      `;
+      return;
+    }
+
+    console.log('[WBS] wbsData length:', data.wbsData.length);
+    console.log('[WBS] First few items:', data.wbsData.slice(0, 3));
+
+    // Validate that we have meaningful data
+    if (data.wbsData.length === 0) {
+      console.warn('[WBS] No WBS data found, showing empty state message');
+      chartContainer.innerHTML = `
+        <div style="text-align: center; padding: 40px; background: #f8f9fa; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+          <h3 style="color: #495057; margin-bottom: 15px;">No Work Breakdown Structure Data</h3>
+          <p style="color: #6c757d; margin-bottom: 20px;">This project doesn't have any tasks or phases defined yet.</p>
+          <p style="color: #6c757d; font-size: 14px;">Try adding some tasks to your project first.</p>
+        </div>
+      `;
+      return;
+    }
+
+    // For now, just show the HTML display to debug
+    console.log('[WBS] Showing HTML display for debugging...');
+    fallbackToHTMLDisplay(data.wbsData);
+    return;
+
+    // Transform the data to jstree format
+    const jstreeData = data.wbsData.map(item => ({
+      id: item.id,
+      text: item.text,
+      parent: item.parent === null ? '#' : item.parent,
+      state: {
+        opened: true,
+        disabled: false
+      },
+      data: {
+        type: item.type,
+        status: item.status,
+        progress: item.progress,
+        workEstimate: item.workEstimate,
+        dueDate: item.dueDate,
+        wbsNumber: item.wbsNumber,
+        level: item.level
+      },
+      icon: item.type === 'project' ? 'fas fa-project-diagram' : 
+            item.type === 'phase' ? 'fas fa-layer-group' : 
+            item.type === 'task' ? 'fas fa-tasks' : 'fas fa-circle'
+    }));
+
+    console.log('[WBS] Transformed jstree data:', jstreeData);
+
+    // Check if jstree is available
+    if (typeof $ === 'undefined') {
+      console.error('[WBS] jQuery not available');
+      chartContainer.innerHTML = `
+        <div style="text-align: center; padding: 40px; color: #e74c3c;">
+          <h3>jQuery not available</h3>
+          <p>Required library jQuery is not loaded.</p>
+        </div>
+      `;
+      return;
+    }
+    
+    if (typeof $.fn.jstree === 'undefined') {
+      console.error('[WBS] jstree not available');
+      chartContainer.innerHTML = `
+        <div style="text-align: center; padding: 40px; color: #e74c3c;">
+          <h3>jstree not available</h3>
+          <p>Required library jstree is not loaded.</p>
+        </div>
+      `;
+      return;
+    }
+
+    console.log('[WBS] Initializing jstree...');
+    
+    // Prepare the chart container with proper styling
+    chartContainer.innerHTML = `
+      <div id="wbsChart" style="min-height: 400px; padding: 20px; background: #f8f9fa; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+        <div style="margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #dee2e6;">
+          <h3 style="margin: 0; color: #495057; font-size: 18px;">Work Breakdown Structure</h3>
+          <p style="margin: 5px 0 0 0; color: #6c757d; font-size: 14px;">Project: ${data.projectInfo?.name || 'Unknown Project'}</p>
+        </div>
+        <style>
+          /* Force all text to be visible with !important */
+          #wbsChart * {
+            color: #333 !important;
+          }
+          
+          #wbsChart {
+            background: #f8f9fa !important;
+            color: #333 !important;
+          }
+          
+          /* Override jstree default styles aggressively */
+          #wbsChart .jstree-default,
+          #wbsChart .jstree-default * {
+            background: #f8f9fa !important;
+            color: #333 !important;
+          }
+          
+          #wbsChart .jstree-default .jstree-node {
+            margin-left: 20px;
+            color: #333 !important;
+          }
+          
+          #wbsChart .jstree-default .jstree-children {
+            margin-left: 20px;
+            color: #333 !important;
+          }
+          
+          #wbsChart .jstree-default .jstree-themeicon {
+            margin-right: 8px;
+            color: #6c757d !important;
+          }
+          
+          #wbsChart .jstree-default .jstree-anchor {
+            padding: 8px 12px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+            color: #333 !important;
+            background: transparent !important;
+          }
+          
+          #wbsChart .jstree-default .jstree-anchor:hover {
+            background-color: #e9ecef !important;
+            color: #495057 !important;
+          }
+          
+          #wbsChart .jstree-default .jstree-clicked {
+            background-color: #e3f2fd !important;
+            border: 1px solid #2196f3 !important;
+            color: #1976d2 !important;
+          }
+          
+          #wbsChart .jstree-default .jstree-wholerow-clicked {
+            background-color: #e3f2fd !important;
+          }
+          
+          #wbsChart .jstree-default .jstree-wholerow-hovered {
+            background-color: #f8f9fa !important;
+          }
+          
+          /* Force text visibility */
+          #wbsChart .jstree-default .jstree-text,
+          #wbsChart .jstree-default .jstree-anchor,
+          #wbsChart .jstree-default .jstree-node,
+          #wbsChart .jstree-default .jstree-children {
+            color: #333 !important;
+            background: transparent !important;
+          }
+          
+          #wbsChart .jstree-default .jstree-icon {
+            color: #6c757d !important;
+          }
+          
+          /* Additional overrides for jstree elements */
+          #wbsChart .jstree-default .jstree-anchor > * {
+            color: #333 !important;
+          }
+          
+          #wbsChart .jstree-default .jstree-anchor span {
+            color: #333 !important;
+          }
+        </style>
+      </div>
+    `;
+    
+    // Destroy existing jstree if it exists
+    try {
+      $('#wbsChart').jstree('destroy');
+    } catch (e) {
+      console.log('[WBS] No existing jstree to destroy');
+    }
+    
+    // Initialize jstree with the WBS data
+    $('#wbsChart').jstree({ 
+      core: { 
+        data: jstreeData,
+        themes: {
+          name: 'default',
+          responsive: true
+        }
+      },
+      plugins: ['themes', 'dnd', 'contextmenu', 'wholerow'],
+      contextmenu: {
+        items: function(node) {
+          return {
+            edit: {
+              label: "Edit",
+              action: function() {
+                console.log('Edit clicked for:', node);
+              }
+            },
+            delete: {
+              label: "Delete",
+              action: function() {
+                console.log('Delete clicked for:', node);
+              }
+            }
+          };
+        }
+      }
+    }).on('ready.jstree', function() {
+      console.log('[WBS] jstree ready event fired');
+      
+      // Check if text is actually visible after a short delay
+      setTimeout(() => {
+        const wbsChart = document.getElementById('wbsChart');
+        if (wbsChart) {
+          const textElements = wbsChart.querySelectorAll('.jstree-text, .jstree-anchor');
+          let hasVisibleText = false;
+          
+          console.log('[WBS] Checking text visibility...');
+          console.log('[WBS] Found text elements:', textElements.length);
+          
+          textElements.forEach((el, index) => {
+            const computedStyle = window.getComputedStyle(el);
+            const color = computedStyle.color;
+            const backgroundColor = computedStyle.backgroundColor;
+            
+            console.log(`[WBS] Element ${index}:`, {
+              tagName: el.tagName,
+              className: el.className,
+              textContent: el.textContent?.substring(0, 50),
+              computedColor: color,
+              computedBackground: backgroundColor,
+              element: el
+            });
+            
+            // Check if text has reasonable contrast
+            if (color && (color.includes('rgb(51, 51, 51)') || color.includes('#333') || color.includes('black'))) {
+              hasVisibleText = true;
+            }
+          });
+          
+          if (!hasVisibleText) {
+            console.warn('[WBS] Text still not visible, falling back to HTML display');
+            showSnackbar('WBS tree text not visible, showing simplified view.');
+            fallbackToHTMLDisplay(jstreeData);
+          } else {
+            showSnackbar('Work Breakdown Structure loaded successfully!');
+          }
+        }
+      }, 1000); // Check after 1 second
+      
+      // Clear the timeout since jstree loaded successfully
+      if (window.wbsTimeout) {
+        clearTimeout(window.wbsTimeout);
+        window.wbsTimeout = null;
+      }
+    }).on('error.jstree', function(e, data) {
+      console.error('[WBS] jstree error:', data);
+      showSnackbar('Error initializing WBS tree structure.');
+      // Fallback to HTML display
+      fallbackToHTMLDisplay(jstreeData);
+    });
+    
+    // Set a timeout to detect if jstree is taking too long
+    window.wbsTimeout = setTimeout(() => {
+      console.warn('[WBS] jstree initialization timeout, falling back to HTML display');
+      showSnackbar('WBS tree taking too long to load, showing simplified view.');
+      fallbackToHTMLDisplay(jstreeData);
+    }, 10000); // 10 second timeout
+    
+    console.log('[WBS] jstree initialized successfully');
+    
+  } catch (error) {
+    console.error('[WBS] Error during generation:', error);
+    chartContainer.innerHTML = `
+      <div style="text-align: center; padding: 40px; color: #e74c3c;">
+        <h3>An error occurred</h3>
+        <p>${error.message}</p>
+        <button onclick="generateWBS()" style="padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer;">Retry</button>
+      </div>
+    `;
+  }
+}
+
+// Fallback function to display WBS data as simple HTML if jstree fails
+function displayWBSAsHTML(wbsData) {
+  console.log('[WBS] displayWBSAsHTML called with:', wbsData);
+  
+  let html = '<div style="font-family: Arial, sans-serif; color: #333;">';
+  
+  // Group by parent
+  const groupedData = {};
+  wbsData.forEach(item => {
+    const parentKey = item.parent === null ? 'root' : item.parent;
+    if (!groupedData[parentKey]) {
+      groupedData[parentKey] = [];
+    }
+    groupedData[parentKey].push(item);
+  });
+  
+  console.log('[WBS] Grouped data structure:', groupedData);
+  
+  function renderGroup(parentId, level = 0) {
+    const items = groupedData[parentId] || [];
+    if (items.length === 0) return '';
+    
+    let groupHtml = '';
+    items.forEach(item => {
+      const statusColor = item.status === 'Done' ? '#28a745' : 
+                          item.status === 'In Progress' ? '#ffc107' : '#dc3545';
+      
+      groupHtml += `
+        <div style="margin-left: ${level * 20}px; margin-bottom: 12px; padding: 12px; border-left: 4px solid ${statusColor}; background: white; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+          <div style="font-weight: bold; color: #495057; font-size: 14px; margin-bottom: 6px;">
+            ${item.wbsNumber ? item.wbsNumber + '. ' : ''}${item.text || 'Untitled Item'}
+          </div>
+          <div style="font-size: 12px; color: #6c757d; line-height: 1.4;">
+            <span style="background: #e9ecef; padding: 2px 6px; border-radius: 3px; margin-right: 8px;">Type: ${item.type || 'Unknown'}</span>
+            <span style="background: #e9ecef; padding: 2px 6px; border-radius: 3px; margin-right: 8px;">Status: ${item.status || 'Not Set'}</span>
+            <span style="background: #e9ecef; padding: 2px 6px; border-radius: 3px; margin-right: 8px;">Progress: ${item.progress || 0}%</span>
+            ${item.workEstimate ? `<span style="background: #e9ecef; padding: 2px 6px; border-radius: 3px; margin-right: 8px;">Work: ${item.workEstimate}h</span>` : ''}
+            ${item.dueDate ? `<span style="background: #e9ecef; padding: 2px 6px; border-radius: 3px; margin-right: 8px;">Due: ${new Date(item.dueDate).toLocaleDateString()}</span>` : ''}
+          </div>
+        </div>
+      `;
+      
+      // Render children
+      groupHtml += renderGroup(item.id, level + 1);
+    });
+    
+    return groupHtml;
+  }
+  
+  html += renderGroup('root');
+  html += '</div>';
+  
+  console.log('[WBS] Generated HTML length:', html.length);
+  return html;
+}
+
+// Function to fallback to HTML display
+function fallbackToHTMLDisplay(wbsData) {
+  console.log('[WBS] Fallback to HTML display called with data:', wbsData);
+  
+  const chartContainer = document.getElementById('chartContainer');
+  if (chartContainer) {
+    // Check if we have valid data
+    if (!wbsData || !Array.isArray(wbsData) || wbsData.length === 0) {
+      console.warn('[WBS] No valid data for HTML display');
+      chartContainer.innerHTML = `
+        <div style="padding: 20px; background: #f8f9fa; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); color: #333;">
+          <h3 style="margin-bottom: 20px; color: #495057; border-bottom: 2px solid #dee2e6; padding-bottom: 10px;">Work Breakdown Structure (Simplified View)</h3>
+          <div style="text-align: center; padding: 40px; color: #6c757d;">
+            <p>No WBS data available to display.</p>
+            <p>This might indicate that the project has no tasks or there was an issue loading the data.</p>
+          </div>
+        </div>
+      `;
+      return;
+    }
+    
+    console.log('[WBS] Rendering HTML display with', wbsData.length, 'items');
+    chartContainer.innerHTML = `
+      <div style="padding: 20px; background: #f8f9fa; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); color: #333;">
+        <h3 style="margin-bottom: 20px; color: #495057; border-bottom: 2px solid #dee2e6; padding-bottom: 10px;">Work Breakdown Structure (Simplified View)</h3>
+        ${displayWBSAsHTML(wbsData)}
+      </div>
+    `;
+  }
 }
 
 export function exportPDF(elementId) {

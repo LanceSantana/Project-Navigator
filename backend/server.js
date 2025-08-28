@@ -116,6 +116,7 @@ const projectSchema = new mongoose.Schema({
         },
         dueDate: Date,
         assignedTo: String,
+        workEstimate: Number, // Hours estimate
         phase: {
             type: String,
             enum: ['Planning', 'Execution', 'Monitoring', 'Closure'],
@@ -431,23 +432,128 @@ app.post('/generate-gantt', authenticateToken, async (req, res) => {
 
 app.post('/generate-wbs', authenticateToken, async (req, res) => {
   try {
-    const { projectId } = req.body;
+    const { projectId, viewMode, filters } = req.body;
     const project = await Project.findOne({ _id: projectId, userId: req.user.userId });
     if (!project) return res.status(404).json({ error: 'Project not found' });
 
-    const prompt = `Generate a Work Breakdown Structure (WBS) in flat JSON array format for a project with this description: ${project.description}. Use { id, parent, text } format.`;
+    // Get tasks based on filters (similar to Gantt endpoint)
+    let tasks = project.tasks;
+    
+    if (filters) {
+      if (filters.phase) {
+        tasks = tasks.filter(task => task.phase === filters.phase);
+      }
+      
+      if (filters.sprint) {
+        const today = new Date();
+        const currentSprintStart = new Date(today);
+        currentSprintStart.setDate(today.getDate() - today.getDay());
+        
+        const currentSprintEnd = new Date(currentSprintStart);
+        currentSprintEnd.setDate(currentSprintStart.getDate() + 13);
+        
+        if (filters.sprint === 'current') {
+          tasks = tasks.filter(task => {
+            const taskDate = new Date(task.dueDate);
+            return taskDate >= currentSprintStart && taskDate <= currentSprintEnd;
+          });
+        } else if (filters.sprint === 'next') {
+          const nextSprintStart = new Date(currentSprintEnd);
+          nextSprintStart.setDate(currentSprintEnd.getDate() + 1);
+          
+          const nextSprintEnd = new Date(nextSprintStart);
+          nextSprintEnd.setDate(nextSprintStart.getDate() + 13);
+          
+          tasks = tasks.filter(task => {
+            const taskDate = new Date(task.dueDate);
+            return taskDate >= nextSprintStart && taskDate <= nextSprintEnd;
+          });
+        }
+      }
+    }
 
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4',
-      messages: [
-        { role: 'user', content: prompt }
-      ]
+    // Group tasks by phase
+    const phaseGroups = {};
+    ['Planning', 'Execution', 'Monitoring', 'Closure'].forEach(phase => {
+      const phaseTasks = tasks.filter(task => task.phase === phase);
+      if (phaseTasks.length > 0) {
+        phaseGroups[phase] = phaseTasks;
+      }
     });
 
-    const json = response.choices[0].message.content.match(/```json\s*([\s\S]+?)\s*```/);
-    const wbsData = JSON.parse(json ? json[1] : response.choices[0].message.content);
+    // Convert tasks to WBS format (hierarchical tree structure)
+    const wbsData = [];
+    let taskId = 1;
 
-    res.json({ wbsData });
+    // Add phase groups as parent nodes
+    Object.entries(phaseGroups).forEach(([phase, phaseTasks]) => {
+      const groupId = `phase-${phase}`;
+      
+      // Calculate phase-level statistics
+      const phaseProgress = phaseTasks.length > 0 ? 
+        Math.round(phaseTasks.reduce((sum, task) => sum + (task.status === 'Done' ? 100 : task.status === 'In Progress' ? 50 : 0), 0) / phaseTasks.length) : 0;
+      
+      const phaseWorkEstimate = phaseTasks.reduce((sum, task) => sum + (task.workEstimate || 0), 0);
+
+      wbsData.push({
+        id: groupId,
+        parent: null,
+        text: phase,
+        type: 'phase',
+        status: 'group',
+        progress: phaseProgress,
+        workEstimate: phaseWorkEstimate,
+        dueDate: null,
+        taskCount: phaseTasks.length,
+        completedCount: phaseTasks.filter(t => t.status === 'Done').length
+      });
+
+      // Add tasks under each phase with proper WBS numbering
+      phaseTasks.forEach((task, index) => {
+        const taskTitle = task.title || task.name || 'Untitled Task';
+        const progress = task.status === 'Done' ? 100 : task.status === 'In Progress' ? 50 : 0;
+        const wbsNumber = `${taskId}.${index + 1}`;
+
+        wbsData.push({
+          id: `task-${taskId}`,
+          parent: groupId,
+          text: taskTitle,
+          type: 'task',
+          status: task.status,
+          progress: progress,
+          workEstimate: task.workEstimate || 0,
+          dueDate: task.dueDate,
+          assignedTo: task.assignedTo,
+          description: task.description,
+          wbsNumber: wbsNumber,
+          level: 2 // Task level
+        });
+      });
+      
+      taskId++;
+    });
+
+    // Add project summary as root node
+    const totalTasks = wbsData.filter(item => item.type === 'task').length;
+    const totalCompleted = wbsData.filter(item => item.type === 'task' && item.status === 'Done').length;
+    const overallProgress = totalTasks > 0 ? Math.round((totalCompleted / totalTasks) * 100) : 0;
+    const totalWorkEstimate = wbsData.filter(item => item.type === 'task').reduce((sum, task) => sum + (task.workEstimate || 0), 0);
+
+    wbsData.unshift({
+      id: 'project-root',
+      parent: null,
+      text: project.name,
+      type: 'project',
+      status: 'active',
+      progress: overallProgress,
+      workEstimate: totalWorkEstimate,
+      dueDate: null,
+      taskCount: totalTasks,
+      completedCount: totalCompleted,
+      level: 0 // Project root level
+    });
+
+    res.json({ wbsData, projectInfo: { name: project.name, description: project.description, currentPhase: project.currentPhase } });
   } catch (err) {
     console.error('WBS error:', err);
     res.status(500).json({ error: 'Failed to generate WBS' });
