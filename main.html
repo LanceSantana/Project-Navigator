@@ -189,8 +189,49 @@
       }
     });
 
+    // Migrate existing history data to be user-specific
+    function migrateHistoryData() {
+      const token = localStorage.getItem('jwt');
+      if (!token) return;
+      
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const userId = payload.userId || payload.id || payload._id;
+        
+        if (!userId) return;
+        
+        // Check if there's old global history data to migrate
+        const oldGlobalHistory = JSON.parse(localStorage.getItem('globalChatHistory')) || [];
+        if (oldGlobalHistory.length > 0) {
+          // Add user ID to old conversations and save to user-specific storage
+          const userHistoryKey = `globalChatHistory_${userId}`;
+          const existingUserHistory = JSON.parse(localStorage.getItem(userHistoryKey)) || [];
+          
+          oldGlobalHistory.forEach(convo => {
+            convo.userId = userId;
+          });
+          
+          // Merge old and new history, keeping user-specific history first
+          const mergedHistory = [...existingUserHistory, ...oldGlobalHistory];
+          
+          // Keep only the last 50 conversations
+          if (mergedHistory.length > 50) {
+            mergedHistory.splice(50);
+          }
+          
+          localStorage.setItem(userHistoryKey, JSON.stringify(mergedHistory));
+          
+          // Remove old global history
+          localStorage.removeItem('globalChatHistory');
+        }
+      } catch (error) {
+        console.error('Error migrating history data:', error);
+      }
+    }
+
     window.addEventListener("DOMContentLoaded", () => {
       loadProjects();
+      migrateHistoryData(); // Migrate any existing data
       renderHistoryList();
       // Add click handler for new project button
       document.getElementById('newProjectBtn').addEventListener('click', () => {
@@ -358,6 +399,28 @@
       const currentProjectId = localStorage.getItem('currentProjectId');
       if (!currentProjectId) return;
 
+      // Get current user ID from JWT token
+      const token = localStorage.getItem('jwt');
+      let userId = null;
+      
+      if (token) {
+        try {
+          // Decode JWT token to get user ID (simple base64 decode for payload)
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          userId = payload.userId || payload.id || payload._id;
+        } catch (error) {
+          console.error('Error decoding JWT token:', error);
+        }
+      }
+
+      if (!userId) {
+        console.error('Could not determine user ID from token');
+        return;
+      }
+
+      // Add user ID to conversation
+      convo.userId = userId;
+
       // Save to project-specific history
       const historyKey = `chatHistory_${currentProjectId}`;
       let projectHistory = JSON.parse(localStorage.getItem(historyKey)) || [];
@@ -365,11 +428,12 @@
       if (projectHistory.length > 20) projectHistory.pop(); // Keep last 20 conversations per project
       localStorage.setItem(historyKey, JSON.stringify(projectHistory));
 
-      // Save to global history (across all projects)
-      let globalHistory = JSON.parse(localStorage.getItem('globalChatHistory')) || [];
+      // Save to global history (across all projects) - user-specific
+      const userHistoryKey = `globalChatHistory_${userId}`;
+      let globalHistory = JSON.parse(localStorage.getItem(userHistoryKey)) || [];
       globalHistory.unshift(convo);
       if (globalHistory.length > 50) globalHistory.pop(); // Keep last 50 conversations globally
-      localStorage.setItem('globalChatHistory', JSON.stringify(globalHistory));
+      localStorage.setItem(userHistoryKey, JSON.stringify(globalHistory));
 
       renderHistoryList();
     }
@@ -382,8 +446,29 @@
       
       historyList.innerHTML = '';
       
-      // Get global history (across all projects)
-      const globalHistory = JSON.parse(localStorage.getItem('globalChatHistory')) || [];
+      // Get current user ID from JWT token
+      const token = localStorage.getItem('jwt');
+      let userId = null;
+      
+      if (token) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          userId = payload.userId || payload.id || payload._id;
+        } catch (error) {
+          console.error('Error decoding JWT token:', error);
+        }
+      }
+
+      if (!userId) {
+        noHistory.style.display = 'block';
+        historyCount.textContent = '0 conversations';
+        clearHistoryBtn.style.display = 'none';
+        return;
+      }
+      
+      // Get user-specific global history
+      const userHistoryKey = `globalChatHistory_${userId}`;
+      const globalHistory = JSON.parse(localStorage.getItem(userHistoryKey)) || [];
       
       if (globalHistory.length === 0) {
         noHistory.style.display = 'block';
@@ -597,19 +682,41 @@
 
     // Clear history functionality
     document.getElementById('clearHistoryBtn').addEventListener('click', function() {
-      const confirmClear = confirm('Are you sure you want to clear ALL conversation history across all projects? This action cannot be undone.');
+      const confirmClear = confirm('Are you sure you want to clear ALL your conversation history across all projects? This action cannot be undone.');
       if (!confirmClear) return;
       
-      // Clear global history
-      localStorage.removeItem('globalChatHistory');
+      // Get current user ID
+      const token = localStorage.getItem('jwt');
+      let userId = null;
       
-      // Clear all project-specific histories
-      const keys = Object.keys(localStorage);
-      keys.forEach(key => {
-        if (key.startsWith('chatHistory_')) {
-          localStorage.removeItem(key);
+      if (token) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          userId = payload.userId || payload.id || payload._id;
+        } catch (error) {
+          console.error('Error decoding JWT token:', error);
         }
-      });
+      }
+
+      if (userId) {
+        // Clear user-specific global history
+        localStorage.removeItem(`globalChatHistory_${userId}`);
+        
+        // Clear all project-specific histories for this user
+        const keys = Object.keys(localStorage);
+        keys.forEach(key => {
+          if (key.startsWith('chatHistory_')) {
+            const projectHistory = JSON.parse(localStorage.getItem(key)) || [];
+            // Filter out conversations that don't belong to this user
+            const filteredHistory = projectHistory.filter(convo => convo.userId !== userId);
+            if (filteredHistory.length === 0) {
+              localStorage.removeItem(key);
+            } else {
+              localStorage.setItem(key, JSON.stringify(filteredHistory));
+            }
+          }
+        });
+      }
       
       renderHistoryList();
       
@@ -617,7 +724,7 @@
       const chatBox = document.getElementById('chatBox');
       const feedbackDiv = document.createElement('div');
       feedbackDiv.className = 'message bot feedback-message';
-      feedbackDiv.textContent = 'All conversation history cleared successfully.';
+      feedbackDiv.textContent = 'Your conversation history cleared successfully.';
       chatBox.appendChild(feedbackDiv);
       
       setTimeout(() => {
